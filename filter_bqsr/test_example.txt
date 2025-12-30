@@ -1,0 +1,4 @@
+https://pf8-release.cog.sanger.ac.uk/vcf/Pf3D7_MIT_v3.filt.vcf.gz
+https://pf8-release.cog.sanger.ac.uk/vcf/Pf3D7_MIT_v3.filt.vcf.gz.tbi
+https://pf8-release.cog.sanger.ac.uk/vcf/Pf3D7_API_v3.filt.vcf.gz
+https://pf8-release.cog.sanger.ac.uk/vcf/Pf3D7_API_v3.filt.vcf.gz.tbi

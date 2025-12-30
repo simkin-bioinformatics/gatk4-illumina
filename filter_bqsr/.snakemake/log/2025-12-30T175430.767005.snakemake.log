@@ -1,0 +1,61 @@
+Assuming unrestricted shared filesystem usage.
+None
+host: alfred-framework
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 2
+Rules claiming more threads will be scaled down.
+Job stats:
+job            count
+-----------  -------
+all                1
+filter_bqsr        2
+total              3
+
+Select jobs to execute...
+Execute 2 jobs...
+[Tue Dec 30 17:54:31 2025]
+localrule filter_bqsr:
+    output: TEMP_vcf_files/Pf3D7_MIT_v3.filt.vcf, PASS_vcf_files/Pf3D7_MIT_v3.filt.vcf
+    jobid: 1
+    reason: Missing output files: PASS_vcf_files/Pf3D7_MIT_v3.filt.vcf
+    wildcards: filter_file=Pf3D7_MIT_v3.filt
+    resources: tmpdir=/tmp
+[Tue Dec 30 17:54:31 2025]
+localrule filter_bqsr:
+    output: TEMP_vcf_files/Pf3D7_API_v3.filt.vcf, PASS_vcf_files/Pf3D7_API_v3.filt.vcf
+    jobid: 2
+    reason: Missing output files: PASS_vcf_files/Pf3D7_API_v3.filt.vcf
+    wildcards: filter_file=Pf3D7_API_v3.filt
+    resources: tmpdir=/tmp
+RuleException:
+CalledProcessError in file "/home/alfred/gatk4-illumina/filter_bqsr/filter_bqsr.smk", line 28:
+Command 'set -euo pipefail;  /home/alfred/micromamba/envs/snakemake/bin/python3.13 /home/alfred/gatk4-illumina/filter_bqsr/.snakemake/scripts/tmpry6brt_b.filter_bqsr.py' returned non-zero exit status 1.
+[Tue Dec 30 17:54:32 2025]
+Error in rule filter_bqsr:
+    message: None
+    jobid: 2
+    output: TEMP_vcf_files/Pf3D7_API_v3.filt.vcf, PASS_vcf_files/Pf3D7_API_v3.filt.vcf
+RuleException:
+CalledProcessError in file "/home/alfred/gatk4-illumina/filter_bqsr/filter_bqsr.smk", line 28:
+Command 'set -euo pipefail;  /home/alfred/micromamba/envs/snakemake/bin/python3.13 /home/alfred/gatk4-illumina/filter_bqsr/.snakemake/scripts/tmpvt9c9kxr.filter_bqsr.py' returned non-zero exit status 1.
+[Tue Dec 30 17:54:32 2025]
+Error in rule filter_bqsr:
+    message: None
+    jobid: 1
+    output: TEMP_vcf_files/Pf3D7_MIT_v3.filt.vcf, PASS_vcf_files/Pf3D7_MIT_v3.filt.vcf
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look below for error messages
+[Tue Dec 30 17:54:32 2025]
+Error in rule filter_bqsr:
+    message: None
+    jobid: 2
+    output: TEMP_vcf_files/Pf3D7_API_v3.filt.vcf, PASS_vcf_files/Pf3D7_API_v3.filt.vcf
+[Tue Dec 30 17:54:32 2025]
+Error in rule filter_bqsr:
+    message: None
+    jobid: 1
+    output: TEMP_vcf_files/Pf3D7_MIT_v3.filt.vcf, PASS_vcf_files/Pf3D7_MIT_v3.filt.vcf
+Complete log(s): /home/alfred/gatk4-illumina/filter_bqsr/.snakemake/log/2025-12-30T175430.767005.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.
