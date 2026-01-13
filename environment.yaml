@@ -1,0 +1,9 @@
+name: gatk
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - bcftools
+  - gatk4
+  - py-bgzip
+  - joblib

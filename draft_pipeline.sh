@@ -1,31 +1,51 @@
 # Variables for clarity
-REF_GENOME="/home/alfred/gatk4-illumina/Pf_3D7_genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta"
-READ1=/home/alfred/gatk4-illumina/251006_miseq/fastq/Undetermined_S0_R1_001.fastq.gz
-READ2=/home/alfred/gatk4-illumina/251006_miseq/fastq/Undetermined_S0_R2_001.fastq.gz
-OUTPUT_BAM="Undetermined.sorted.bam"
+REF_GENOME="/home/charlie/git/gatk4-illumina/input/genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta"
+READ1="/home/charlie/git/gatk4-illumina/input/fastqs/Undetermined_S0_R1_001.fastq.gz"
+READ2="/home/charlie/git/gatk4-illumina/input/fastqs/Undetermined_S0_R2_001.fastq.gz"
+OUTPUTFOLDER="output"
+OUTPUTNAME='Undetermined'
+MERGEDVCF='/home/charlie/git/gatk4-illumina/output/PASS_vcf_with_headers/merged.vcf.gz'
 
-# The -R option adds the read group. Adjust SM (Sample) and LB (Library) accordingly.
-# We pipe (|) the output of bwa mem directly to samtools sort to save space and time.
-#bwa mem -o Undetermined.sam -t 4 -R "@RG\tID:group1\tSM:sample1\tPL:ILLUMINA\tLB:lib1" $REF_GENOME $READ1 $READ2
+# OUTPUT_BAM="output/Undetermined.sorted.bam"
 
-#samtools sort -@ 4 -o Undetermined.sorted.bam Undetermined.sam
+# # Index the genome for bwa
+# # creates index files in same folder as genome
+# bwa index $REF_GENOME
 
-#gatk MarkDuplicates \
-#  -I Undetermined.sorted.bam \
-#  -O Undetermined.marked_dups.bam \
-#  -M Undetermined.dup_metrics.txt
 
-# Index the new BAM file
-samtools index Undetermined.marked_dups.bam
+# # The -R option adds the read group. Adjust SM (Sample) and LB (Library) accordingly.
+# # We pipe (|) the output of bwa mem directly to samtools sort to save space and time.
+# bwa mem -o $OUTPUTFOLDER/$OUTPUTNAME.sam -t 4 -R "@RG\tID:group1\tSM:sample1\tPL:ILLUMINA\tLB:lib1" $REF_GENOME $READ1 $READ2
 
-#gatk BaseRecalibrator \
-#  -I Undetermined.marked_dups.bam \
+# samtools sort -@ 4 -o $OUTPUTFOLDER/$OUTPUTNAME.sorted.bam $OUTPUTFOLDER/$OUTPUTNAME.sam
+
+# # Mark Duplicates
+# gatk MarkDuplicates \
+#  -I $OUTPUTFOLDER/$OUTPUTNAME.sorted.bam \
+#  -O $OUTPUTFOLDER/$OUTPUTNAME.marked_dups.bam \
+#  -M $OUTPUTFOLDER/$OUTPUTNAME.dup_metrics.txt
+
+# # Index the new BAM file
+# samtools index $OUTPUTFOLDER/$OUTPUTNAME.marked_dups.bam
+
+# # Create the FASTA Index
+# samtools faidx $REF_GENOME
+
+# # Create GATK sequence dictionary
+# gatk CreateSequenceDictionary \
+#      -R $REF_GENOME
+
+# # create index for known-sites file
+# gatk IndexFeatureFile -I $MERGEDVCF
+
+# gatk BaseRecalibrator \
+#  -I $OUTPUTFOLDER/$OUTPUTNAME.marked_dups.bam \
 #  -R $REF_GENOME \
-#  --known-sites known_sites.vcf.gz \
-#  -O sample1.recal_data.table
+#  --known-sites $MERGEDVCF \
+#  -O $OUTPUTFOLDER/sample1.recal_data.table
 
 gatk HaplotypeCaller \
-  -I Undetermined.marked_dups.bam \
+  -I $OUTPUTFOLDER/$OUTPUTNAME.marked_dups.bam \
   -R $REF_GENOME \
   -ERC GVCF \
-  -O Undetermined.g.vcf.gz
+  -O $OUTPUTFOLDER/$OUTPUTNAME.g.vcf.gz
