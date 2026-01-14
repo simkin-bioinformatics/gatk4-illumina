@@ -8,6 +8,11 @@ only variants that are 'pass' and only keeps the following columns:
 
 This script re-does this BQSR parsing. Because the input vcf files are so large,
 the lines from these files are parsed one by one.
+
+This version of the script attempts to fix a parsing error where the header line
+that starts #CHROM was not added to the parsed vcf file - the edited script has
+not been tested because re-generating the parsed VCF files would take several
+days. (attempted fix is on line 44).
 '''
 
 def get_header(header):
@@ -36,6 +41,7 @@ for line in open('sanger_vcf_file_links.txt'):
 			if line.startswith('#CHROM'):
 				h_dict=get_header(split_line)
 				parsing=True
+				output_file.write('\t'.join(targets)+'\n')
 			if parsing:
 #				print(split_line[h_dict['FILTER']])
 				if split_line[h_dict['FILTER']]=='PASS':
