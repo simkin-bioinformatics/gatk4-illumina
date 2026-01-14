@@ -1,2 +1,3 @@
-input
-output
+gatk4-illumina_test_data
+.snakemake
+.histfile
