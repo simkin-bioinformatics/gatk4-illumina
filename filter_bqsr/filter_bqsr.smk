@@ -10,7 +10,7 @@ def parse_filter_files(url_paths):
 		url_path=url_path.strip()
 		if url_path.endswith('.vcf.gz'):
 			files.append(url_path.split('/')[-1][:-12])
-	return files
+	return sorted(files)
 
 chroms=parse_filter_files(url_paths_file)
 
@@ -65,4 +65,4 @@ rule merge_files:
 	output:
 		known_sites='known_sites/known_sites.vcf.gz'
 	shell:
-		'bcftools merge {input.zipped_files} -o {output.known_sites} -O z'
+		'bcftools concat {input.zipped_files} -o {output.known_sites} -O z'
