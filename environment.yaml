@@ -1,10 +1,11 @@
 name: gatk
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
 dependencies:
   - bcftools
-  - gatk4
-  - py-bgzip
   - joblib
   - snakemake
+  - bwa
+  - samtools
+  - conda

@@ -1,14 +1,14 @@
 import os
 
 
-ref_genome = "gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta"
-output_directory = "gatk4-illumina_test_data/output2"
+ref_genome = "/home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta"
+output_directory = "output"
 output_name = "Undetermined"
 
-read_1 = "gatk4-illumina_test_data/fastqs/Undetermined_S0_R1_001.fastq.gz"
-read_2 = "gatk4-illumina_test_data/fastqs/Undetermined_S0_R2_001.fastq.gz"
+read_1 = "/home/charlie/data/gatk4-illumina_test_data/fastqs/Undetermined_S0_R1_001.fastq.gz"
+read_2 = "/home/charlie/data/gatk4-illumina_test_data/fastqs/Undetermined_S0_R2_001.fastq.gz"
 
-merged_vcf='gatk4-illumina_test_data/PASS_vcf_with_headers/merged.vcf.gz'
+merged_vcf='/home/charlie/data/gatk4-illumina_test_data/PASS_vcf_with_headers/merged.vcf.gz'
 
 copied_ref_genome = os.path.join(output_directory, "copied_data", os.path.basename(ref_genome))
 copied_vcf = os.path.join(output_directory, "copied_data", os.path.basename(merged_vcf))
@@ -41,15 +41,24 @@ rule index_genome:
         pac = copied_ref_genome + ".pac",
         sa = copied_ref_genome + ".sa",
         fai = copied_ref_genome + ".fai",
-        gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
         vcf_index = copied_vcf + ".csi"
     shell:
         '''
-        bwa index {input.copied_ref_genome} && \
-        samtools faidx {input.copied_ref_genome} && \
-        gatk CreateSequenceDictionary -R {input.copied_ref_genome}
+        bwa index {input.copied_ref_genome}
+        samtools faidx {input.copied_ref_genome}
         bcftools index {input.copied_vcf}
         '''
+
+rule create_gatk_dict:
+    input:
+        copied_ref_genome = copied_ref_genome,
+    output:
+        gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
+    conda:
+        "envs/gatk.yaml"
+    shell:
+        "gatk CreateSequenceDictionary -R {input.copied_ref_genome}"
+
 
 rule bwa_mem:
     input:
@@ -93,6 +102,8 @@ rule mark_duplicates:
     output:
         marked_dups = os.path.join(output_directory, f"{output_name}.marked_dups.bam"),
         dup_metrics = os.path.join(output_directory, f"{output_name}.dup_metrics.txt")
+    conda:
+        "envs/gatk.yaml"
     shell:
         '''
         gatk MarkDuplicates \
@@ -117,6 +128,8 @@ rule index_feature_file:
         merged_vcf = copied_vcf
     output:
         vcf_index = f"{copied_vcf}.tbi"
+    conda:
+        "envs/gatk.yaml"
     shell:
         '''
         gatk IndexFeatureFile -I {input.merged_vcf}
@@ -132,6 +145,8 @@ rule BQSR:
         vcf_index = f"{copied_vcf}.tbi",
     output:
         recal_data_table = os.path.join(output_directory, f"{output_name}.recal_data.table")
+    conda:
+        "envs/gatk.yaml"    
     shell:
         '''
         gatk BaseRecalibrator \
@@ -148,6 +163,8 @@ rule apply_BQSR:
         recal_data_table = os.path.join(output_directory, f"{output_name}.recal_data.table")
     output:
         analysis_ready_bam = os.path.join(output_directory, f"{output_name}.analysis_ready.bam")
+    conda:
+        "envs/gatk.yaml"
     shell:
         '''
         gatk ApplyBQSR \
@@ -172,6 +189,8 @@ rule haplotype_caller:
         ref_genome = copied_ref_genome
     output:
         called_haplotypes = os.path.join(output_directory, f"{output_name}.g.vcf.gz")
+    conda:
+        "envs/gatk.yaml"
     shell:
         '''
         gatk HaplotypeCaller \
@@ -209,10 +228,15 @@ rule haplotype_caller:
 #             -L Pf3D7_12_v3 \
 #             -L Pf3D7_13_v3 \
 #             -L Pf3D7_14_v3 \
-#             -V {input.called_haplotypes}
+#             -V {input.called_haplotypes} \
+            #   -V 
 #         '''
 #             # -V sample2.g.vcf.gz \
 #             # -V sample3.g.vcf.gz
+
+# rule consolidate_gvcf:
+#     input:
+#         expand()
 
 
 rule joint_genotyping:
@@ -221,6 +245,8 @@ rule joint_genotyping:
         called_haplotypes = os.path.join(output_directory, f"{output_name}.g.vcf.gz")
     output:
         cohort = os.path.join(output_directory, 'cohort.vcf.gz')
+    conda:
+        "envs/gatk.yaml"
     shell:
         '''
         gatk GenotypeGVCFs \
@@ -228,14 +254,3 @@ rule joint_genotyping:
             -V {input.called_haplotypes} \
             -O {output.cohort}
         '''
-#### Step 5: Joint Genotyping
-
-# This is the final step. It takes the combined database from `GenomicsDBImport` and runs the genotyping algorithm across all samples simultaneously. This "joint" analysis uses information from all samples to make more accurate calls for each one.
-
-#   * **Tool:** `gatk GenotypeGVCFs`
-#   * **Basic Command:**
-#     ```bash
-
-#     ```
-
-# You will now have a single file, **`cohort.vcf.gz`**, containing the variants for your entire set of samples. The next step, which is more advanced, would be to filter this VCF using `VariantRecalibrator` (VQSR), but the steps above will give you a complete, un-filtered callset.
