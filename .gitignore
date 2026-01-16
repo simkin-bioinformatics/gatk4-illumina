@@ -1,3 +1,6 @@
-gatk4-illumina_test_data
+.pixi/*
+!.pixi/config.toml
 .snakemake
-.histfile
+# pixi environments
+.pixi/*
+!.pixi/config.toml
