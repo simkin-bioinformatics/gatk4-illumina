@@ -1,33 +1,41 @@
 import os
 
-
+#### define input files
 ref_genome = "/home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta"
-output_directory = "output"
-output_name = "Undetermined"
+output_directory = "final_test"
+samples_file = "/home/charlie/data/gatk4-illumina_test_data/cherrypicked_samples.txt"
+sample_reads_folder = "/home/charlie/data/gatk4-illumina_test_data/cherrypicked_reads"
+known_sites_vcf = '/home/charlie/data/gatk4-illumina_test_data/known-sites.vcf.gz'
 
-read_1 = "/home/charlie/data/gatk4-illumina_test_data/fastqs/Undetermined_S0_R1_001.fastq.gz"
-read_2 = "/home/charlie/data/gatk4-illumina_test_data/fastqs/Undetermined_S0_R2_001.fastq.gz"
+#### get a list of samples from the samples file
+samples = []
+with open(samples_file, 'r') as f:
+    for line in f:
+        sample = line.strip()
+        samples.append(sample)
 
-merged_vcf='/home/charlie/data/gatk4-illumina_test_data/PASS_vcf_with_headers/merged.vcf.gz'
+# samples = "DOBA-LUK-141-2021-MSMT-1"
 
-copied_ref_genome = os.path.join(output_directory, "copied_data", os.path.basename(ref_genome))
-copied_vcf = os.path.join(output_directory, "copied_data", os.path.basename(merged_vcf))
-print(copied_ref_genome)
+#### copy the reference genome ino a local folder so that the indices generated here don't populate the user's folder
+copied_ref_genome = os.path.join("temp_copied_input", os.path.basename(ref_genome))
+copied_vcf = os.path.join("temp_copied_input", os.path.basename(known_sites_vcf))
+
 rule all:
     input:
+        # merged_samples = os.path.join(output_directory, "all_samples_merged.vcf.gz")
         cohort = os.path.join(output_directory, 'cohort.vcf.gz')
 
 rule copy_genome_and_vcf:
     input:
         ref_genome = ref_genome,
-        merged_vcf = merged_vcf
+        known_sites_vcf = known_sites_vcf
     output:
         copied_ref_genome = copied_ref_genome,
         copied_vcf = copied_vcf,
     shell:
         '''
         cp {input.ref_genome} {output.copied_ref_genome}
-        cp {input.merged_vcf} {output.copied_vcf}
+        cp {input.known_sites_vcf} {output.copied_vcf}
         '''
     
 rule index_genome:
@@ -71,11 +79,11 @@ rule bwa_mem:
         gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
         vcf_index = copied_vcf + ".csi",
         copied_ref_genome = copied_ref_genome,
-        read_1 = read_1,
-        read_2 = read_2,
+        read_1 = os.path.join(sample_reads_folder, f"{sample}_R1.fastq.gz"),
+        read_2 = os.path.join(sample_reads_folder, f"{sample}_R2.fastq.gz"),
 
     output:
-        sam = os.path.join(output_directory, f"{output_name}.sam")
+        sam = os.path.join(output_directory, "{sample}.sam")
     shell:
         # note that snakemake replaces \t with a literal tab so the \\t was necessitated below
         '''
@@ -88,9 +96,9 @@ rule bwa_mem:
 
 rule samtools_sort:
     input:
-        sam = os.path.join(output_directory, f"{output_name}.sam")
+        sam = os.path.join(output_directory, "intermediate", "{sample}.sam")
     output:
-        sorted = os.path.join(output_directory, f"{output_name}.sorted.bam")
+        sorted = os.path.join(output_directory, "intermediate", "{sample}.sorted.bam")
     shell:
         '''
         samtools sort -@ 4 -o {output.sorted} {input.sam}
@@ -98,10 +106,10 @@ rule samtools_sort:
 
 rule mark_duplicates:
     input:
-        sorted = os.path.join(output_directory, f"{output_name}.sorted.bam")
+        sorted = os.path.join(output_directory, "intermediate", "{sample}.sorted.bam")
     output:
-        marked_dups = os.path.join(output_directory, f"{output_name}.marked_dups.bam"),
-        dup_metrics = os.path.join(output_directory, f"{output_name}.dup_metrics.txt")
+        marked_dups = os.path.join(output_directory, "intermediate", "{sample}.marked_dups.bam"),
+        dup_metrics = os.path.join(output_directory, "intermediate", "{sample}.dup_metrics.txt")
     conda:
         "envs/gatk.yaml"
     shell:
@@ -114,10 +122,10 @@ rule mark_duplicates:
 
 rule index_marked_bam:
     input:
-        marked_dups = os.path.join(output_directory, f"{output_name}.marked_dups.bam"),
-        dup_metrics = os.path.join(output_directory, f"{output_name}.dup_metrics.txt")
+        marked_dups = os.path.join(output_directory, "intermediate", "{sample}.marked_dups.bam"),
+        dup_metrics = os.path.join(output_directory, "intermediate", "{sample}.dup_metrics.txt")
     output:
-        marked_dups_index = os.path.join(output_directory, f"{output_name}.marked_dups.bam.bai")
+        marked_dups_index = os.path.join(output_directory, "intermediate", "{sample}.marked_dups.bam.bai")
     shell:
         '''
         samtools index {input.marked_dups}
@@ -125,26 +133,26 @@ rule index_marked_bam:
 
 rule index_feature_file:
     input:
-        merged_vcf = copied_vcf
+        known_sites_vcf = copied_vcf
     output:
         vcf_index = f"{copied_vcf}.tbi"
     conda:
         "envs/gatk.yaml"
     shell:
         '''
-        gatk IndexFeatureFile -I {input.merged_vcf}
+        gatk IndexFeatureFile -I {input.known_sites_vcf}
         '''
 
 rule BQSR:
     input:
-        marked_dups = os.path.join(output_directory, f"{output_name}.marked_dups.bam"),
-        marked_dups_index = os.path.join(output_directory, f"{output_name}.marked_dups.bam.bai"),
+        marked_dups = os.path.join(output_directory, "intermediate", "{sample}.marked_dups.bam"),
+        marked_dups_index = os.path.join(output_directory, "intermediate", "{sample}.marked_dups.bam.bai"),
         copied_ref_genome = copied_ref_genome,
         gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
         copied_vcf = copied_vcf,
         vcf_index = f"{copied_vcf}.tbi",
     output:
-        recal_data_table = os.path.join(output_directory, f"{output_name}.recal_data.table")
+        recal_data_table = os.path.join(output_directory, "intermediate", "{sample}.recal_data.table")
     conda:
         "envs/gatk.yaml"    
     shell:
@@ -158,11 +166,11 @@ rule BQSR:
 
 rule apply_BQSR:
     input:
-        marked_dups = os.path.join(output_directory, f"{output_name}.marked_dups.bam"),
+        marked_dups = os.path.join(output_directory, "intermediate", "{sample}.marked_dups.bam"),
         copied_ref_genome = copied_ref_genome,
-        recal_data_table = os.path.join(output_directory, f"{output_name}.recal_data.table")
+        recal_data_table = os.path.join(output_directory, "intermediate", "{sample}.recal_data.table")
     output:
-        analysis_ready_bam = os.path.join(output_directory, f"{output_name}.analysis_ready.bam")
+        analysis_ready_bam = os.path.join(output_directory, "intermediate", "{sample}.analysis_ready.bam")
     conda:
         "envs/gatk.yaml"
     shell:
@@ -176,19 +184,19 @@ rule apply_BQSR:
 
 rule index_BQSR_bam:
     input:
-        analysis_ready_bam = os.path.join(output_directory, f"{output_name}.analysis_ready.bam")
+        analysis_ready_bam = os.path.join(output_directory, "intermediate", "{sample}.analysis_ready.bam")
     output:
-        analysis_bam_index = os.path.join(output_directory, f"{output_name}.analysis_ready.bam.bai")
+        analysis_bam_index = os.path.join(output_directory, "intermediate", "{sample}.analysis_ready.bam.bai")
     shell:
         "samtools index {input.analysis_ready_bam}"
 
 rule haplotype_caller:
     input:
-        analysis_ready_bam = os.path.join(output_directory, f"{output_name}.analysis_ready.bam"),
-        analysis_bam_index = os.path.join(output_directory, f"{output_name}.analysis_ready.bam.bai"),
+        analysis_ready_bam = os.path.join(output_directory, "intermediate", "{sample}.analysis_ready.bam"),
+        analysis_bam_index = os.path.join(output_directory, "intermediate", "{sample}.analysis_ready.bam.bai"),
         ref_genome = copied_ref_genome
     output:
-        called_haplotypes = os.path.join(output_directory, f"{output_name}.g.vcf.gz")
+        called_haplotypes = os.path.join(output_directory, "intermediate", "{sample}.g.vcf.gz")
     conda:
         "envs/gatk.yaml"
     shell:
@@ -200,49 +208,41 @@ rule haplotype_caller:
             -O {output.called_haplotypes}
         '''
 
-# #### Step 4: Consolidate gVCFs
-# rule consolidate_gVCFs:
-# #   * **Note:** This tool works on intervals. For a basic run, you can specify your main chromosomes 
-# #   (e.g., `-L chr1 -L chr2`). For whole-genome data, it's often run per chromosome or chromosome group.
-#     input:
-#         called_haplotypes = os.path.join(output_directory, f"{output_name}.g.vcf.gz")
-#     output:
-#         touch(os.path.join(output_directory, 'consolidate_done.txt'))
-#     params:
-#         genomicsdb_workspace_path = os.path.join(output_directory, "my_database")
-#     shell:
-#         '''
-#         gatk GenomicsDBImport \
-#             --genomicsdb-workspace-path {params.genomicsdb_workspace_path} \
-#             -L Pf3D7_01_v3 \
-#             -L Pf3D7_02_v3 \
-#             -L Pf3D7_03_v3 \
-#             -L Pf3D7_04_v3 \
-#             -L Pf3D7_05_v3 \
-#             -L Pf3D7_06_v3 \
-#             -L Pf3D7_07_v3 \
-#             -L Pf3D7_08_v3 \
-#             -L Pf3D7_09_v3 \
-#             -L Pf3D7_10_v3 \
-#             -L Pf3D7_11_v3 \
-#             -L Pf3D7_12_v3 \
-#             -L Pf3D7_13_v3 \
-#             -L Pf3D7_14_v3 \
-#             -V {input.called_haplotypes} \
-            #   -V 
-#         '''
-#             # -V sample2.g.vcf.gz \
-#             # -V sample3.g.vcf.gz
+rule consolidate gVCFs:
+# there is an alternate method using gatk GenomicsDBImport but here we will use bcftools merge
+# the other method is probably faster
+    input:
+        called_haplotypes = expand(os.path.join(output_directory, "intermediate", "{sample}.g.vcf.gz"), sample = samples)
+    output:
+        called_merged_haplotypes = os.path.join(output_directory, "intermediate", "called_merged_haplotypes.vcf.gz")
+    shell:
+        # the --force-samples was used because each sample in every sample file in the test data had
+        # the same sample1 name
+        '''
+        bcftools merge {input.called_haplotypes} \
+            -O z -o {output.called_merged_haplotypes} \
+            --force-samples
+        '''
 
-# rule consolidate_gvcf:
-#     input:
-#         expand()
+rule index_consolidated_vcf:
+    input:
+        called_merged_haplotypes = os.path.join(output_directory, "intermediate", "called_merged_haplotypes.vcf.gz")
+    output:
+        merged_vcf_index = f"{os.path.join(output_directory, "intermediate", "called_merged_haplotypes.vcf.gz")}.tbi"
+    conda:
+        "envs/gatk.yaml"
+    shell:
+        '''
+        gatk IndexFeatureFile -I {input.called_merged_haplotypes}
+        '''
 
 
 rule joint_genotyping:
     input:
         ref_genome = copied_ref_genome,
-        called_haplotypes = os.path.join(output_directory, f"{output_name}.g.vcf.gz")
+        called_merged_haplotypes = os.path.join(output_directory, "intermediate", "called_merged_haplotypes.vcf.gz"),
+        merged_vcf_index = f"{os.path.join(output_directory, "intermediate", "called_merged_haplotypes.vcf.gz")}.tbi"
+
     output:
         cohort = os.path.join(output_directory, 'cohort.vcf.gz')
     conda:
@@ -251,6 +251,6 @@ rule joint_genotyping:
         '''
         gatk GenotypeGVCFs \
             -R {input.ref_genome} \
-            -V {input.called_haplotypes} \
+            -V {input.called_merged_haplotypes} \
             -O {output.cohort}
         '''
