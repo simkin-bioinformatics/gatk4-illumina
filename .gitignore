@@ -4,3 +4,4 @@
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+temp_copied_input
