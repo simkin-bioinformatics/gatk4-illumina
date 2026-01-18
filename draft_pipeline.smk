@@ -221,7 +221,8 @@ rule consolidate gVCFs:
         '''
         bcftools merge {input.called_haplotypes} \
             -O z -o {output.called_merged_haplotypes} \
-            --force-samples
+            --force-samples \
+            --force-single
         '''
 
 rule index_consolidated_vcf:
