@@ -79,11 +79,11 @@ rule bwa_mem:
         gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
         vcf_index = copied_vcf + ".csi",
         copied_ref_genome = copied_ref_genome,
-        read_1 = os.path.join(sample_reads_folder, f"{sample}_R1.fastq.gz"),
-        read_2 = os.path.join(sample_reads_folder, f"{sample}_R2.fastq.gz"),
+        read_1 = os.path.join(sample_reads_folder, "{sample}_R1.fastq.gz"),
+        read_2 = os.path.join(sample_reads_folder, "{sample}_R2.fastq.gz"),
 
     output:
-        sam = os.path.join(output_directory, "{sample}.sam")
+        sam = os.path.join(output_directory, "intermediate", "{sample}.sam")
     shell:
         # note that snakemake replaces \t with a literal tab so the \\t was necessitated below
         '''
