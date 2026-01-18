@@ -2,7 +2,7 @@ import os
 
 #### define input files
 ref_genome = "/home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta"
-output_directory = "final_test"
+output_directory = "/home/charlie/data/gatk4-illumina_test_data/test_output"
 samples_file = "/home/charlie/data/gatk4-illumina_test_data/cherrypicked_samples.txt"
 sample_reads_folder = "/home/charlie/data/gatk4-illumina_test_data/cherrypicked_reads"
 known_sites_vcf = '/home/charlie/data/gatk4-illumina_test_data/known-sites.vcf.gz'
@@ -14,7 +14,7 @@ with open(samples_file, 'r') as f:
         sample = line.strip()
         samples.append(sample)
 
-# samples = "DOBA-LUK-141-2021-MSMT-1"
+# samples = ['Undetermined_S0']
 
 #### copy the reference genome ino a local folder so that the indices generated here don't populate the user's folder
 copied_ref_genome = os.path.join("temp_copied_input", os.path.basename(ref_genome))
