@@ -10,7 +10,7 @@ version = "0.1.0"
 [dependencies]
 bcftools = "*"
 joblib = "*"
-snakemake = "*"
+snakemake = "9.1.*"
 bwa = "*"
 samtools = "*"
 conda = "*"
