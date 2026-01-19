@@ -62,8 +62,8 @@ rule create_gatk_dict:
         copied_ref_genome = copied_ref_genome,
     output:
         gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
-    conda:
-        "envs/gatk.yaml"
+    # conda:
+    #     "envs/gatk.yaml"
     shell:
         "gatk CreateSequenceDictionary -R {input.copied_ref_genome}"
 
@@ -110,8 +110,8 @@ rule mark_duplicates:
     output:
         marked_dups = os.path.join(output_directory, "intermediate", "{sample}.marked_dups.bam"),
         dup_metrics = os.path.join(output_directory, "intermediate", "{sample}.dup_metrics.txt")
-    conda:
-        "envs/gatk.yaml"
+    # conda:
+    #     "envs/gatk.yaml"
     shell:
         '''
         gatk MarkDuplicates \
@@ -136,8 +136,8 @@ rule index_feature_file:
         known_sites_vcf = copied_vcf
     output:
         vcf_index = f"{copied_vcf}.tbi"
-    conda:
-        "envs/gatk.yaml"
+    # conda:
+    #     "envs/gatk.yaml"
     shell:
         '''
         gatk IndexFeatureFile -I {input.known_sites_vcf}
@@ -153,8 +153,8 @@ rule BQSR:
         vcf_index = f"{copied_vcf}.tbi",
     output:
         recal_data_table = os.path.join(output_directory, "intermediate", "{sample}.recal_data.table")
-    conda:
-        "envs/gatk.yaml"    
+    # conda:
+    #     "envs/gatk.yaml"    
     shell:
         '''
         gatk BaseRecalibrator \
@@ -171,8 +171,8 @@ rule apply_BQSR:
         recal_data_table = os.path.join(output_directory, "intermediate", "{sample}.recal_data.table")
     output:
         analysis_ready_bam = os.path.join(output_directory, "intermediate", "{sample}.analysis_ready.bam")
-    conda:
-        "envs/gatk.yaml"
+    # conda:
+    #     "envs/gatk.yaml"
     shell:
         '''
         gatk ApplyBQSR \
@@ -197,8 +197,8 @@ rule haplotype_caller:
         ref_genome = copied_ref_genome
     output:
         called_haplotypes = os.path.join(output_directory, "intermediate", "{sample}.g.vcf.gz")
-    conda:
-        "envs/gatk.yaml"
+    # conda:
+    #     "envs/gatk.yaml"
     shell:
         '''
         gatk HaplotypeCaller \
@@ -230,8 +230,8 @@ rule index_consolidated_vcf:
         called_merged_haplotypes = os.path.join(output_directory, "intermediate", "called_merged_haplotypes.vcf.gz")
     output:
         merged_vcf_index = f"{os.path.join(output_directory, "intermediate", "called_merged_haplotypes.vcf.gz")}.tbi"
-    conda:
-        "envs/gatk.yaml"
+    # conda:
+    #     "envs/gatk.yaml"
     shell:
         '''
         gatk IndexFeatureFile -I {input.called_merged_haplotypes}
@@ -246,8 +246,8 @@ rule joint_genotyping:
 
     output:
         cohort = os.path.join(output_directory, 'cohort.vcf.gz')
-    conda:
-        "envs/gatk.yaml"
+    # conda:
+    #     "envs/gatk.yaml"
     shell:
         '''
         gatk GenotypeGVCFs \
