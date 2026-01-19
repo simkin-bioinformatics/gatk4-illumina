@@ -5,3 +5,4 @@
 .pixi/*
 !.pixi/config.toml
 temp_copied_input
+test_output
