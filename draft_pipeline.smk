@@ -90,7 +90,7 @@ rule bwa_mem:
         bwa mem \
             -o {output.sam} \
             -t 4 \
-            -R "@RG\\tID:group1\\tSM:sample1\\tPL:ILLUMINA\\tLB:lib1" \
+            -R "@RG\\tID:group1\\tSM:{wildcards.sample}\\tPL:ILLUMINA\\tLB:lib1" \
             {input.copied_ref_genome} {input.read_1} {input.read_2} \
         '''
 
@@ -221,7 +221,6 @@ rule consolidate gVCFs:
         '''
         bcftools merge {input.called_haplotypes} \
             -O z -o {output.called_merged_haplotypes} \
-            --force-samples \
             --force-single
         '''
 
