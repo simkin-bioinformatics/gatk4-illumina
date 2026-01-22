@@ -51,34 +51,34 @@ rule copy_genome_and_vcf:
         rsync -a {input.known_sites_vcf} {output.known_sites_vcf}
         '''
     
-# rule index_genome:
-#     input:
-#         copied_ref_genome = copied_ref_genome,
-#         copied_vcf = copied_vcf
-#     output:
-#         amb = copied_ref_genome + ".amb",
-#         ann = copied_ref_genome + ".ann",
-#         bwt = copied_ref_genome + ".bwt",
-#         pac = copied_ref_genome + ".pac",
-#         sa = copied_ref_genome + ".sa",
-#         fai = copied_ref_genome + ".fai",
-#         vcf_index = copied_vcf + ".csi"
-#     shell:
-#         '''
-#         bwa index {input.copied_ref_genome}
-#         samtools faidx {input.copied_ref_genome}
-#         bcftools index {input.copied_vcf}
-#         '''
+rule index_genome:
+    input:
+        ref_genome = ref_genome,
+        known_sites_vcf = known_sites_vcf 
+    output:
+        amb = ref_genome + ".amb",
+        ann = ref_genome + ".ann",
+        bwt = ref_genome + ".bwt",
+        pac = ref_genome + ".pac",
+        sa = ref_genome + ".sa",
+        fai = ref_genome + ".fai",
+        vcf_index = known_sites_vcf + ".csi"
+    shell:
+        '''
+        bwa index {input.ref_genome}
+        samtools faidx {input.ref_genome}
+        bcftools index {input.known_sites_vcf}
+        '''
 
-# rule create_gatk_dict:
-#     input:
-#         copied_ref_genome = copied_ref_genome,
-#     output:
-#         gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
-#     # conda:
-#     #     "envs/gatk.yaml"
-#     shell:
-#         "gatk CreateSequenceDictionary -R {input.copied_ref_genome}"
+rule create_gatk_dict:
+    input:
+        rules.index_genome.output,
+    output:
+        gatk_dict = ref_genome.replace(".fasta", ".dict"),
+    # conda:
+    #     "envs/gatk.yaml"
+    shell:
+        "gatk CreateSequenceDictionary -R {ref_genome}"
 
 
 # rule bwa_mem:
