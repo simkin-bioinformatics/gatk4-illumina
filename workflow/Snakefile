@@ -2,6 +2,12 @@ configfile: "config/config.yaml"
 
 import os
 
+# define location of ref genome and known sites file
+ref_genome = os.path.join(config['output_directory'],
+    'genome_and_known_sites', os.path.basename(config['ref_genome']))
+known_sites_vcf = os.path.join(config['output_directory'],
+    'genome_and_known_sites',os.path.basename(config['known_sites_vcf']))
+
 # get a list of samples from the samples file
 samples = []
 with open(config['samples_file'], 'r') as f:
@@ -36,18 +42,9 @@ rule copy_genome_and_vcf:
     input:
         ref_genome = config['ref_genome'],
         known_sites_vcf = config['known_sites_vcf']
-
     output:
-        ref_genome = os.path.join(
-            config['output_directory'],
-            'genome_and_known_sites',
-            os.path.basename(config['ref_genome'])
-        ),
-        known_sites_vcf = os.path.join(
-            config['output_directory'],
-            'genome_and_known_sites',
-            os.path.basename(config['known_sites_vcf'])
-        )
+        ref_genome = ref_genome,
+        known_sites_vcf = known_sites_vcf 
     shell:
         '''
         rsync -a {input.ref_genome} {output.ref_genome}
