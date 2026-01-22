@@ -6,7 +6,7 @@ platforms = ["linux-64"]
 version = "0.1.0"
 
 [tasks]
-snakemake = "snakemake -s draft_pipeline.smk -c 8 --use-conda"
+snakemake = "snakemake -c 8"
 
 [dependencies]
 bcftools = ">=1.23,<2"
@@ -16,3 +16,4 @@ bwa = ">=0.7.19,<0.8"
 samtools = ">=1.23,<2"
 conda = ">=25.11.1,<26"
 gatk4 = ">=4.6.2.0,<5"
+rsync = "*"
