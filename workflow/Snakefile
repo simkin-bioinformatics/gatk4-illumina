@@ -81,31 +81,23 @@ rule create_gatk_dict:
         "gatk CreateSequenceDictionary -R {ref_genome}"
 
 
-# rule bwa_mem:
-#     input:
-#         amb = copied_ref_genome + ".amb",
-#         ann = copied_ref_genome + ".ann",
-#         bwt = copied_ref_genome + ".bwt",
-#         pac = copied_ref_genome + ".pac",
-#         sa = copied_ref_genome + ".sa",
-#         fai = copied_ref_genome + ".fai",
-#         gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
-#         vcf_index = copied_vcf + ".csi",
-#         copied_ref_genome = copied_ref_genome,
-#         read_1 = os.path.join(sample_reads_folder, "{sample}_R1.fastq.gz"),
-#         read_2 = os.path.join(sample_reads_folder, "{sample}_R2.fastq.gz"),
-
-#     output:
-#         sam = os.path.join(output_directory, "intermediate", "{sample}.sam")
-#     shell:
-#         # note that snakemake replaces \t with a literal tab so the \\t was necessitated below
-#         '''
-#         bwa mem \
-#             -o {output.sam} \
-#             -t 4 \
-#             -R "@RG\\tID:group1\\tSM:{wildcards.sample}\\tPL:ILLUMINA\\tLB:lib1" \
-#             {input.copied_ref_genome} {input.read_1} {input.read_2} \
-#         '''
+rule bwa_mem:
+    input:
+        rules.index_genome.output,
+        rules.create_gatk_dict.output.gatk_dict,
+        read_1 = f"{config['sample_reads_folder']}/"+"{sample}_R1.fastq.gz",
+        read_2 = f"{config['sample_reads_folder']}/"+"{sample}_R2.fastq.gz",
+    output:
+        sam = f"{config['output_directory']}/bwa_mem/"+"{sample}.sam"
+    shell:
+        # note that snakemake replaces \t with a literal tab so the \\t was necessitated below
+        '''
+        bwa mem \
+            -o {output.sam} \
+            -t 4 \
+            -R "@RG\\tID:group1\\tSM:{wildcards.sample}\\tPL:ILLUMINA\\tLB:lib1" \
+            {ref_genome} {input.read_1} {input.read_2}
+        '''
 
 # rule samtools_sort:
 #     input:
