@@ -1,12 +1,15 @@
 import os
 
-#### define input files
-ref_genome = "/home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta"
-output_directory = "/home/charlie/data/gatk4-illumina_test_data/test_output"
-samples_file = "/home/charlie/data/gatk4-illumina_test_data/cherrypicked_samples.txt"
-sample_reads_folder = "/home/charlie/data/gatk4-illumina_test_data/cherrypicked_reads"
-known_sites_vcf = '/home/charlie/data/gatk4-illumina_test_data/known-sites.vcf.gz'
-
+configfile: 'gatk4-illumina.yaml'
+output_directory=config['output_directory']
+ref_genome=config['ref_genome']
+samples_file=config['samples_file']
+sample_reads_folder=config['sample_reads_folder']
+R1_suffix=config['R1_suffix']
+R2_suffix=config['R2_suffix']
+known_sites_vcf=config['known_sites_vcf']
+known_sites_copy_path=os.path.join("temp_copied_input", os.path.basename(known_sites_vcf))
+ref_genome_copy_path=os.path.join("temp_copied_input", os.path.basename(ref_genome))
 #### get a list of samples from the samples file
 samples = []
 with open(samples_file, 'r') as f:
@@ -16,9 +19,6 @@ with open(samples_file, 'r') as f:
 
 # samples = ['Undetermined_S0']
 
-#### copy the reference genome ino a local folder so that the indices generated here don't populate the user's folder
-copied_ref_genome = os.path.join("temp_copied_input", os.path.basename(ref_genome))
-copied_vcf = os.path.join("temp_copied_input", os.path.basename(known_sites_vcf))
 
 rule all:
     input:
@@ -26,42 +26,47 @@ rule all:
         cohort = os.path.join(output_directory, 'cohort.vcf.gz')
 
 rule copy_genome_and_vcf:
+    '''
+    copy the reference genome into a local folder so that the indices generated
+    here don't populate the user's original folder. The same needs to be done
+    for the vcf file of known high confidence mutations.
+    '''
     input:
         ref_genome = ref_genome,
         known_sites_vcf = known_sites_vcf
     output:
-        copied_ref_genome = copied_ref_genome,
-        copied_vcf = copied_vcf,
+        copied_ref_genome = ref_genome_copy_path,
+        copied_known_sites = known_sites_copy_path
     shell:
         '''
         cp {input.ref_genome} {output.copied_ref_genome}
-        cp {input.known_sites_vcf} {output.copied_vcf}
+        cp {input.known_sites_vcf} {output.copied_known_sites}
         '''
     
 rule index_genome:
     input:
-        copied_ref_genome = copied_ref_genome,
-        copied_vcf = copied_vcf
+        copied_ref_genome = ref_genome_copy_path,
+        copied_known_sites = known_sites_copy_path
     output:
-        amb = copied_ref_genome + ".amb",
-        ann = copied_ref_genome + ".ann",
-        bwt = copied_ref_genome + ".bwt",
-        pac = copied_ref_genome + ".pac",
-        sa = copied_ref_genome + ".sa",
-        fai = copied_ref_genome + ".fai",
-        vcf_index = copied_vcf + ".csi"
+        amb = ref_genome_copy_path + ".amb",
+        ann = ref_genome_copy_path + ".ann",
+        bwt = ref_genome_copy_path + ".bwt",
+        pac = ref_genome_copy_path + ".pac",
+        sa = ref_genome_copy_path + ".sa",
+        fai = ref_genome_copy_path + ".fai",
+        vcf_index = known_sites_copy_path + ".csi"
     shell:
         '''
         bwa index {input.copied_ref_genome}
         samtools faidx {input.copied_ref_genome}
-        bcftools index {input.copied_vcf}
+        bcftools index {input.copied_known_sites}
         '''
 
 rule create_gatk_dict:
     input:
-        copied_ref_genome = copied_ref_genome,
+        copied_ref_genome = ref_genome_copy_path
     output:
-        gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
+        gatk_dict = ref_genome_copy_path.replace(".fasta", ".dict"),
     # conda:
     #     "envs/gatk.yaml"
     shell:
@@ -70,17 +75,17 @@ rule create_gatk_dict:
 
 rule bwa_mem:
     input:
-        amb = copied_ref_genome + ".amb",
-        ann = copied_ref_genome + ".ann",
-        bwt = copied_ref_genome + ".bwt",
-        pac = copied_ref_genome + ".pac",
-        sa = copied_ref_genome + ".sa",
-        fai = copied_ref_genome + ".fai",
-        gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
-        vcf_index = copied_vcf + ".csi",
-        copied_ref_genome = copied_ref_genome,
-        read_1 = os.path.join(sample_reads_folder, "{sample}_R1.fastq.gz"),
-        read_2 = os.path.join(sample_reads_folder, "{sample}_R2.fastq.gz"),
+        amb = ref_genome_copy_path + ".amb",
+        ann = ref_genome_copy_path + ".ann",
+        bwt = ref_genome_copy_path + ".bwt",
+        pac = ref_genome_copy_path + ".pac",
+        sa = ref_genome_copy_path + ".sa",
+        fai = ref_genome_copy_path + ".fai",
+        gatk_dict = ref_genome_copy_path.replace(".fasta", ".dict"),
+        vcf_index = known_sites_copy_path + ".csi",
+        copied_ref_genome = ref_genome_copy_path,
+        read_1 = os.path.join(sample_reads_folder, "{sample}_"+R1_suffix),
+        read_2 = os.path.join(sample_reads_folder, "{sample}_"+R2_suffix),
 
     output:
         sam = os.path.join(output_directory, "intermediate", "{sample}.sam")
@@ -133,9 +138,9 @@ rule index_marked_bam:
 
 rule index_feature_file:
     input:
-        known_sites_vcf = copied_vcf
+        known_sites_vcf = known_sites_copy_path
     output:
-        vcf_index = f"{copied_vcf}.tbi"
+        vcf_index = f"{known_sites_copy_path}.tbi"
     # conda:
     #     "envs/gatk.yaml"
     shell:
@@ -147,10 +152,10 @@ rule BQSR:
     input:
         marked_dups = os.path.join(output_directory, "intermediate", "{sample}.marked_dups.bam"),
         marked_dups_index = os.path.join(output_directory, "intermediate", "{sample}.marked_dups.bam.bai"),
-        copied_ref_genome = copied_ref_genome,
-        gatk_dict = copied_ref_genome.replace(".fasta", ".dict"),
-        copied_vcf = copied_vcf,
-        vcf_index = f"{copied_vcf}.tbi",
+        copied_ref_genome = ref_genome_copy_path,
+        gatk_dict = ref_genome_copy_path.replace(".fasta", ".dict"),
+        known_sites_vcf = known_sites_copy_path,
+        vcf_index = f"{known_sites_copy_path}.tbi",
     output:
         recal_data_table = os.path.join(output_directory, "intermediate", "{sample}.recal_data.table")
     # conda:
@@ -160,14 +165,14 @@ rule BQSR:
         gatk BaseRecalibrator \
             -I {input.marked_dups} \
             -R {input.copied_ref_genome} \
-            --known-sites {input.copied_vcf} \
+            --known-sites {input.known_sites_vcf} \
             -O {output.recal_data_table}
         '''
 
 rule apply_BQSR:
     input:
         marked_dups = os.path.join(output_directory, "intermediate", "{sample}.marked_dups.bam"),
-        copied_ref_genome = copied_ref_genome,
+        copied_ref_genome = ref_genome_copy_path,
         recal_data_table = os.path.join(output_directory, "intermediate", "{sample}.recal_data.table")
     output:
         analysis_ready_bam = os.path.join(output_directory, "intermediate", "{sample}.analysis_ready.bam")
@@ -194,7 +199,7 @@ rule haplotype_caller:
     input:
         analysis_ready_bam = os.path.join(output_directory, "intermediate", "{sample}.analysis_ready.bam"),
         analysis_bam_index = os.path.join(output_directory, "intermediate", "{sample}.analysis_ready.bam.bai"),
-        ref_genome = copied_ref_genome
+        ref_genome = ref_genome_copy_path
     output:
         called_haplotypes = os.path.join(output_directory, "intermediate", "{sample}.g.vcf.gz")
     # conda:
@@ -239,7 +244,7 @@ rule index_consolidated_vcf:
 
 rule joint_genotyping:
     input:
-        ref_genome = copied_ref_genome,
+        ref_genome = ref_genome_copy_path,
         called_merged_haplotypes = os.path.join(output_directory, "intermediate", "called_merged_haplotypes.vcf.gz"),
         merged_vcf_index = f"{os.path.join(output_directory, "intermediate", "called_merged_haplotypes.vcf.gz")}.tbi"
 

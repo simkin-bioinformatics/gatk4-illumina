@@ -60,7 +60,7 @@ into the following steps:
 6. gatk GenotypeGVCFs uses information from multiple samples to make a final
    decision about which mutations are real.
 
-### annotating variants and generating an AA table.
+### annotating variants and generating an AA table
 The second step is annotating the gatk-called variants with snpEff, which can
 roughly be broken down into the following steps:
 1. snpEff indexes your genome and gff files and builds a snpEff database

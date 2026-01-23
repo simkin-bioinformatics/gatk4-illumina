@@ -1,0 +1,33 @@
+#### define input files
+
+#A copy of the reference genome you'd like to align against, in a single fasta
+#formatted file that contains all chromosomes/contigs.
+ref_genome: "/home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta"
+
+#A gff file containing locations of known transcripts in the genome.
+genome_gff: "genome.gff"
+
+#A tab-delimited file of known drug resistance mutations. This file will be used
+#to force gatk to make calls for these mutations in the vcf file.
+targets_tsv: "targets.tsv"
+
+#The location where you would like to send output files
+output_directory: "/home/charlie/data/gatk4-illumina_test_data/test_output"
+
+#A text file with the names of all samples you would like to analyze, one line
+# per sample.
+samples_file: "/home/charlie/data/gatk4-illumina_test_data/cherrypicked_samples.txt"
+
+#A folder containing fastq files for all of the samples you would like to
+#analyze, with two fastq files per sample.
+sample_reads_folder: "/home/charlie/data/gatk4-illumina_test_data/cherrypicked_reads"
+
+#The suffix found on R1 fastq files that differentiates them from R2 files.
+R1_suffix: "R1.fastq.gz"
+
+#The suffix found on R2 fastq files that differentiates them from R1 files.
+R2_suffix: "R2.fastq.gz"
+
+#A file of known high confidence variable sites
+known_sites_vcf: '/home/charlie/data/gatk4-illumina_test_data/known-sites.vcf.gz'
+
