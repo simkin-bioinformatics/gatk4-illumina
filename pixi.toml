@@ -6,7 +6,7 @@ platforms = ["linux-64"]
 version = "0.1.0"
 
 [tasks]
-snakemake = "snakemake -s draft_pipeline.smk --unlock && snakemake -s draft_pipeline.smk -c 8 --rerun-incomplete"
+gatk4 = "snakemake -s gatk4-illumina.smk --unlock && snakemake -s gatk4-illumina.smk -c 8 --rerun-incomplete"
 
 [dependencies]
 bcftools = ">=1.23,<2"
