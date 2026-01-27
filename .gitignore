@@ -1,8 +1,6 @@
 .pixi/*
 !.pixi/config.toml
 .snakemake
-# pixi environments
-.pixi/*
-!.pixi/config.toml
-temp_copied_input
-test_output
+results/*
+resources/*
+copied_inputs/*
