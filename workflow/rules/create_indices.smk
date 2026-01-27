@@ -1,5 +1,5 @@
-copied_ref_genome = str(Path('copied_inputs') / Path(config['ref_genome']).name)
-copied_known_sites_vcf = Path('copied_inputs') / Path(config['known_sites_vcf']).name
+copied_ref_genome = str(Path(config['indexed_input_directory']) / Path(config['ref_genome']).name)
+copied_known_sites_vcf = Path(config['indexed_input_directory']) / Path(config['known_sites_vcf']).name
 
 rule copy_genome_and_vcf:
     input:
