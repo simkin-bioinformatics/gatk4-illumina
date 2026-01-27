@@ -3,8 +3,8 @@ rule bwa_mem:
         ref_genome = copied_ref_genome,
         bwa_indices = multiext(copied_ref_genome, ".amb", ".ann", ".bwt", ".pac", ".sa"),
         sam_index = f"{copied_ref_genome}.fai",
-        read_1 = Path(config['sample_reads_folder']) / "{sample}_R1.fastq.gz",
-        read_2 = Path(config['sample_reads_folder']) / "{sample}_R2.fastq.gz",
+        read_1 = Path(config['sample_reads_folder']) / str("{sample}"+config['R1_suffix']),
+        read_2 = Path(config['sample_reads_folder']) / str("{sample}" + config['R2_suffix']),
     output:
         bam = results / "aligned_reads" / "{sample}.bam"
     shell:
@@ -43,7 +43,7 @@ rule BQSR:
     output:
         recal_data_table = results / "aligned_reads" / "{sample}.recal_data.table",
     # conda:
-    #     "envs/gatk.yaml"    
+    #     "envs/gatk.yaml"
     threads: 2
     shell:
         '''
