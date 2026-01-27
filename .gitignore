@@ -3,4 +3,4 @@
 .snakemake
 results/*
 resources/*
-copied_inputs/*
+indexed_input_files/*
