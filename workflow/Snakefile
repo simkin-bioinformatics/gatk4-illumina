@@ -25,7 +25,7 @@ rule all:
 rule copy_config:
     input:
         config = "config/config.yaml"
-    output: 
+    output:
         config = results / "config" / "config.yaml"
     shell:
         "rsync -a {input.config} {output.config}"
@@ -64,8 +64,6 @@ rule joint_genotyping_general:
         called_merged_haplotypes = results / "aligned_reads" / "called_haplotypes_merged.vcf.gz"
     output:
         genotyped_cohort = results / 'genotyped_cohort.vcf.gz'
-    # conda:
-    #     "envs/gatk.yaml"
     shell:
         '''
         gatk GenotypeGVCFs \
@@ -81,8 +79,6 @@ rule joint_genotyping_general:
 #         called_merged_haplotypes = results / "aligned_reads" / "called_haplotypes_merged.vcf.gz"
 #     output:
 #         genotyped_cohort = results / 'genotyped_cohort.vcf.gz'
-#     # conda:
-#     #     "envs/gatk.yaml"
 #     shell:
 #         '''
 #         gatk GenotypeGVCFs \
@@ -97,8 +93,6 @@ rule joint_genotyping_general:
 #         called_merged_haplotypes = results / "called_haplotypes" / "called_haplotypes_merged.vcf.gz"
 #     output:
 #         genotyped_cohort_targeted = results / 'genotyped_cohort_targeted.vcf.gz'
-#     # conda:
-#     #     "envs/gatk.yaml"
 #     shell:
 #         '''
 #         gatk GenotypeGVCFs \
@@ -107,7 +101,7 @@ rule joint_genotyping_general:
 #             -O {output.genotyped_cohort_targeted} \
 #             --alleles config/targets_test.vcf \
 #             --genotype-germline-sites true
-#         '''        
+#         '''
 #             # --include-non-variant-sites
 #             # -L config/targets.vcf \
 

@@ -20,8 +20,6 @@ rule mark_duplicates:
         marked_dups = results / "aligned_reads" / "{sample}.marked_dups.bam",
         dup_metrics = results / "aligned_reads" / "{sample}.dup_metrics.txt",
         marked_dups_index = results / "aligned_reads" / "{sample}.marked_dups.bai"
-    # conda:
-    #     "envs/gatk.yaml"
     threads: 2
     shell:
         '''
@@ -42,8 +40,6 @@ rule BQSR:
         marked_dups_index = results / "aligned_reads" / "{sample}.marked_dups.bai"
     output:
         recal_data_table = results / "aligned_reads" / "{sample}.recal_data.table",
-    # conda:
-    #     "envs/gatk.yaml"
     threads: 2
     shell:
         '''
@@ -62,8 +58,6 @@ rule apply_BQSR:
     output:
         analysis_ready_bam = results / "aligned_reads" / "{sample}.analysis_ready.bam",
         analysys_ready_bam_index = results / "aligned_reads" / "{sample}.analysis_ready.bai"
-    # conda:
-    #     "envs/gatk.yaml"
     threads: 2
     shell:
         '''
@@ -82,8 +76,6 @@ rule haplotype_caller:
         ref_genome = copied_ref_genome
     output:
         called_haplotypes = results / "aligned_reads" / "{sample}.g.vcf.gz"
-    # conda:
-    #     "envs/gatk.yaml"
     threads: 2
     shell:
         '''
