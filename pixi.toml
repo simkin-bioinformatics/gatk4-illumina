@@ -6,7 +6,7 @@ platforms = ["linux-64"]
 version = "0.1.0"
 
 [tasks]
-snakemake = "snakemake -c 8"
+snakemake = "snakemake -c all"
 
 [dependencies]
 bcftools = ">=1.23,<2"

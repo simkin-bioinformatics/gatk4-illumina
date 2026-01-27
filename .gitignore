@@ -2,3 +2,5 @@
 !.pixi/config.toml
 .snakemake
 results/*
+resources/*
+copied_inputs/*

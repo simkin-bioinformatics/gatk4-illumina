@@ -1,5 +1,7 @@
-ref_genome: /home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta
+ref_genome: /home/charlie/data/gatk4-illumina_test_data/PlasmoDB-62_Pfalciparum3D7_Genome.fasta
+known_sites_vcf: /home/charlie/data/gatk4-illumina_test_data/known_sites.vcf.gz
+targets_vcf: config/targets.vcf
+
 output_directory: results
-samples_file: /home/charlie/data/gatk4-illumina_test_data/cherrypicked_samples.txt
 sample_reads_folder: /home/charlie/data/gatk4-illumina_test_data/cherrypicked_reads
-known_sites_vcf: /home/charlie/data/gatk4-illumina_test_data/known-sites.vcf.gz
+samples_file: /home/charlie/data/gatk4-illumina_test_data/cherrypicked_reads/samples.txt
