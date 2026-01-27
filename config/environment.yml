@@ -1,9 +1,0 @@
-name: gatk_known_sites
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - snakemake
-  - tabix
-  - bcftools
-  - python
