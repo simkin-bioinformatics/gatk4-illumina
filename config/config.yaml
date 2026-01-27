@@ -2,6 +2,14 @@ ref_genome: /home/charlie/data/gatk4-illumina_test_data/PlasmoDB-62_Pfalciparum3
 known_sites_vcf: /home/charlie/data/gatk4-illumina_test_data/known_sites.vcf.gz
 targets_vcf: config/targets.vcf
 
-output_directory: results
-sample_reads_folder: /home/charlie/data/gatk4-illumina_test_data/cherrypicked_reads
-samples_file: /home/charlie/data/gatk4-illumina_test_data/cherrypicked_reads/samples.txt
+#if you have a globally accessible folder of indexed genome files and don't mind new indexes being added there, you
+# can specify a path to this directory. Otherwise, if you leave this variable as is it will create an indexed_input_files
+# directory inside the current project directory.
+indexed_input_directory: indexed_input_files
+
+R1_suffix: _R1.fastq.gz
+R2_suffix: _R2.fastq.gz
+
+output_directory: results_miptools
+sample_reads_folder: /home/charlie/data/gatk4-illumina_test_data/miptools_reads
+samples_file: /home/charlie/data/gatk4-illumina_test_data/miptools_reads/samples.txt
