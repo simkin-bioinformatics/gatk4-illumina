@@ -1,0 +1,12 @@
+imake the combine vcf step use a database instead of creating one giant vcf
+- this will inprove the joint genotyoing speed
+
+optimize the thread count for each step
+
+automate the creation of rhe samples.txt file so that it just needs a folder
+of input fastqs
+
+automate the creation of a header for the creation of the targets.vcf file
+
+check to make sure the extra variant sites found by the current pipeline match
+those found by running it in pure discovery mode
