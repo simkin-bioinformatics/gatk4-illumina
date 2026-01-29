@@ -1,15 +1,30 @@
-ref_genome: /home/charlie/data/gatk4-illumina_test_data/PlasmoDB-62_Pfalciparum3D7_Genome.fasta
-known_sites_vcf: /home/charlie/data/gatk4-illumina_test_data/known_sites.vcf.gz
+# Input Files
+# ----------------------------------------------------------------------------------
+genome_fasta: resources/PlasmoDB-62_Pfalciparum3D7_Genome.fasta
+genome_gff: resources/PlasmoDB-62_Pfalciparum3D7.gff
+known_sites_vcf: resources/known_sites.vcf.gz
 targets_vcf: config/targets.vcf
+targets_tsv: config/targets.tsv
 
+sample_reads_folder: resources/cherrypicked_reads
+R1_suffix: _R1.fastq.gz
+R2_suffix: _R2.fastq.gz
+
+# folder containing runnable snpeff jar
+snp_eff_folder: ".pixi/envs/default/share/snpeff-5.4.0a-0"
+
+#name and description of a snpEff database to be built
+# ------------------------------------------------------------------------------------
+genome_database_name: "plasmoDB_3D7_v62"
+database_description: "A database for plasmoDB version 62"
+
+# Output Files
+# # --------------------------------------------------------------------------
+output_directory: results/ccc
+
+# Directory of indexed input files
+# ---------------------------------------------------------------------------
 #if you have a globally accessible folder of indexed genome files and don't mind new indexes being added there, you
 # can specify a path to this directory. Otherwise, if you leave this variable as is it will create an indexed_input_files
 # directory inside the current project directory.
 indexed_input_directory: indexed_input_files
-
-R1_suffix: _R1.fastq.gz
-R2_suffix: _R2.fastq.gz
-
-output_directory: results_miptools
-sample_reads_folder: /home/charlie/data/gatk4-illumina_test_data/miptools_reads
-samples_file: /home/charlie/data/gatk4-illumina_test_data/miptools_reads/samples.txt
