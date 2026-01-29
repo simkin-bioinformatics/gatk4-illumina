@@ -15,7 +15,8 @@ include: "rules/align_reads.smk"
 snp_eff_copied = results / Path(config['snp_eff_folder']).name
 module snp_eff_annotation:
     snakefile:
-        "/home/charlie/snp_eff_annotation/workflow/Snakefile"
+        github("simkin-bioinformatics/snp_eff_annotation", path = "/workflow/Snakefile", branch = "main")
+        # "/home/charlie/snp_eff_annotation/workflow/Snakefile"
     config: config
 
 use rule * from snp_eff_annotation exclude copy_config as snpeff_*
