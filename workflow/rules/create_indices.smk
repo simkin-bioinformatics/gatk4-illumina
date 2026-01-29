@@ -1,9 +1,9 @@
-copied_ref_genome = str(Path(config['indexed_input_directory']) / Path(config['ref_genome']).name)
+copied_ref_genome = str(Path(config['indexed_input_directory']) / Path(config['genome_fasta']).name)
 copied_known_sites_vcf = Path(config['indexed_input_directory']) / Path(config['known_sites_vcf']).name
 
 rule copy_genome_and_vcf:
     input:
-        ref_genome = Path(config['ref_genome']).resolve(),
+        ref_genome = Path(config['genome_fasta']).resolve(),
         known_sites_vcf = Path(config['known_sites_vcf']).resolve()
     output:
         ref_genome = copied_ref_genome,

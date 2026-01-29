@@ -1,18 +1,33 @@
 configfile: "config/config.yaml"
 
 from pathlib import Path
+
+samples = [
+    x.name.removesuffix(config['R1_suffix']) for x in
+    Path(config['sample_reads_folder']).glob("*"+config['R1_suffix'])
+]
+
 results = Path(config['output_directory'])
 
 include: "rules/create_indices.smk"
 include: "rules/align_reads.smk"
 
+snp_eff_copied = results / Path(config['snp_eff_folder']).name
+module snp_eff_annotation:
+    snakefile:
+        "/home/charlie/snp_eff_annotation/workflow/Snakefile"
+    config: config
+
+use rule * from snp_eff_annotation exclude copy_config as snpeff_*
+
+
 
 # get a list of samples from the samples file
-samples = []
-with open(config['samples_file'], 'r') as f:
-    for line in f:
-        sample = line.strip()
-        samples.append(sample)
+# samples = []
+# with open(config['samples_file'], 'r') as f:
+#     for line in f:
+#         sample = line.strip()
+#         samples.append(sample)
 
 
 # Rules
@@ -20,15 +35,28 @@ with open(config['samples_file'], 'r') as f:
 
 rule all:
     input:
-        genotyped_cohort = results / 'genotyped_cohort.vcf.gz'
+        # genotyped_cohort = results / 'genotyped_cohort.vcf.gz'
+        coverage_AA=results / "AA_tables" / "coverage_AA_table.csv",
+        reference_AA=results / "AA_tables" / "reference_AA_table.csv",
+        alternate_AA=results / "AA_tables" / "alternate_AA_table.csv",
+        config = results / "config" / "config.yaml",
+        targets_vcf = results / "config" / Path(config['targets_vcf']).name,
+        targets_tsv = results / "config" / Path(config['targets_tsv']).name,
+    default_target: True
 
 rule copy_config:
     input:
-        config = "config/config.yaml"
+        config = "config/config.yaml",
+        targets_vcf = config['targets_vcf'],
+        targets_tsv = config['targets_tsv']
     output:
-        config = results / "config" / "config.yaml"
+        config = results / "config" / "config.yaml",
+        targets_vcf = results / "config" / Path(config['targets_vcf']).name,
+        targets_tsv = results / "config" / Path(config['targets_tsv']).name,
     shell:
-        "rsync -a {input.config} {output.config}"
+        "rsync -a {input.config} {output.config} && "
+        "rsync -a {input.targets_vcf} {output.targets_vcf} && "
+        "rsync -a {input.targets_tsv} {output.targets_tsv}"
 
 rule create_variant_arguments_file:
     input:
@@ -72,46 +100,3 @@ rule joint_genotyping_general:
             -O {output.genotyped_cohort} \
             --force-output-intervals {config[targets_vcf]}
         '''
-
-# rule joint_genotyping_general:
-#     input:
-#         ref_genome = copied_ref_genome,
-#         called_merged_haplotypes = results / "aligned_reads" / "called_haplotypes_merged.vcf.gz"
-#     output:
-#         genotyped_cohort = results / 'genotyped_cohort.vcf.gz'
-#     shell:
-#         '''
-#         gatk GenotypeGVCFs \
-#             -R {input.ref_genome} \
-#             -V {input.called_merged_haplotypes} \
-#             -O {output.genotyped_cohort}
-#         '''
-
-# rule joint_genotyping_targeted:
-#     input:
-#         ref_genome = copied_ref_genome,
-#         called_merged_haplotypes = results / "called_haplotypes" / "called_haplotypes_merged.vcf.gz"
-#     output:
-#         genotyped_cohort_targeted = results / 'genotyped_cohort_targeted.vcf.gz'
-#     shell:
-#         '''
-#         gatk GenotypeGVCFs \
-#             -R {input.ref_genome} \
-#             -V {input.called_merged_haplotypes} \
-#             -O {output.genotyped_cohort_targeted} \
-#             --alleles config/targets_test.vcf \
-#             --genotype-germline-sites true
-#         '''
-#             # --include-non-variant-sites
-#             # -L config/targets.vcf \
-
-# rule merge_after_joint_genotyping:
-#     input:
-#         genotyped_cohort = results / 'genotyped_cohort.vcf.gz',
-#         genotyped_cohort_targeted = results / 'genotyped_cohort_targeted.vcf.gz'
-#     output:
-#         genotyped_cohort_merged = results / 'genotyped_cohort_merged.vcf'
-#     shell:
-#         "bcftools concat {input.genotyped_cohort} {input.genotyped_cohort_targeted} "
-#             "-o {output.genotyped_cohort_merged} "
-#             "-aD" #allow for overlapping sites and remove any duplicates
