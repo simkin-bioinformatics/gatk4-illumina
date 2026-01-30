@@ -40,44 +40,40 @@ rule all:
         coverage_AA=results / "AA_tables" / "coverage_AA_table.csv",
         reference_AA=results / "AA_tables" / "reference_AA_table.csv",
         alternate_AA=results / "AA_tables" / "alternate_AA_table.csv",
-        config = results / "config" / "config.yaml",
-        targets_vcf = results / "config" / Path(config['targets_vcf']).name,
-        targets_tsv = results / "config" / Path(config['targets_tsv']).name,
+        copied_config = results / "config" / "config.yaml",
+        copied_targets_tsv = results / "config" / Path(config['targets_tsv']).name,
     default_target: True
 
 rule copy_config:
     input:
         config = "config/config.yaml",
-        targets_vcf = config['targets_vcf'],
         targets_tsv = config['targets_tsv']
     output:
         config = results / "config" / "config.yaml",
-        targets_vcf = results / "config" / Path(config['targets_vcf']).name,
         targets_tsv = results / "config" / Path(config['targets_tsv']).name,
     shell:
         "rsync -a {input.config} {output.config} && "
-        "rsync -a {input.targets_vcf} {output.targets_vcf} && "
         "rsync -a {input.targets_tsv} {output.targets_tsv}"
 
 rule create_variant_arguments_file:
     input:
-        called_haplotypes = expand(results / "aligned_reads" / "{sample}.g.vcf.gz", sample = samples),
+        called_haplotypes = expand(results / "temp" / "called_haplotypes" / "{sample}.g.vcf.gz", sample = samples),
     output:
-        variant_arguments_file = results / "aligned_reads" / "consolidate_vcf_args.txt"
+        variant_arguments_file = results / "temp" / "consolidate_vcf_args.txt"
     run:
         with open(output.variant_arguments_file, 'w') as out:
             for variant in input.called_haplotypes:
                 out.write(f"--variant {variant}\n")
 
 
-rule consolidate gVCFs:
+rule consolidate_gVCFs:
 # there is an alternate method using gatk GenomicsDBImport but here we will use gatk CombineGVCFs
 # the other method is probably faster for very large datasets
     input:
-        variant_arguments_file = results / "aligned_reads" / "consolidate_vcf_args.txt",
+        variant_arguments_file = results / "temp" / "consolidate_vcf_args.txt",
         ref_genome = copied_ref_genome,
     output:
-        called_merged_haplotypes = results / "aligned_reads" / "called_haplotypes_merged.vcf.gz"
+        called_merged_haplotypes = results / "temp" / "called_haplotypes_merged.vcf.gz",
     shell:
         # gvcfs=({input.called_haplotypes})
         '''
@@ -90,7 +86,8 @@ rule consolidate gVCFs:
 rule joint_genotyping_general:
     input:
         ref_genome = copied_ref_genome,
-        called_merged_haplotypes = results / "aligned_reads" / "called_haplotypes_merged.vcf.gz"
+        called_merged_haplotypes = results / "temp" / "called_haplotypes_merged.vcf.gz",
+        targets_vcf = results / "temp" / "targets.vcf"
     output:
         genotyped_cohort = results / 'genotyped_cohort.vcf.gz'
     shell:
@@ -99,5 +96,5 @@ rule joint_genotyping_general:
             -R {input.ref_genome} \
             -V {input.called_merged_haplotypes} \
             -O {output.genotyped_cohort} \
-            --force-output-intervals {config[targets_vcf]}
+            --force-output-intervals {input.targets_vcf}
         '''

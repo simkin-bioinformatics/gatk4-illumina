@@ -6,7 +6,7 @@ rule bwa_mem:
         read_1 = Path(config['sample_reads_folder']) / str("{sample}"+config['R1_suffix']),
         read_2 = Path(config['sample_reads_folder']) / str("{sample}" + config['R2_suffix']),
     output:
-        bam = results / "aligned_reads" / "{sample}.bam"
+        bam = results / "temp" / "aligned_reads" / "{sample}.bam"
     shell:
         "(bwa mem "
         "-R '@RG\\tID:group1\\tSM:{wildcards.sample}\\tPL:ILLUMINA\\tLB:lib1' "
@@ -15,11 +15,11 @@ rule bwa_mem:
 
 rule mark_duplicates:
     input:
-        bam = results / "aligned_reads" / "{sample}.bam"
+        bam = results / "temp" / "aligned_reads" / "{sample}.bam"
     output:
-        marked_dups = results / "aligned_reads" / "{sample}.marked_dups.bam",
-        dup_metrics = results / "aligned_reads" / "{sample}.dup_metrics.txt",
-        marked_dups_index = results / "aligned_reads" / "{sample}.marked_dups.bai"
+        marked_dups = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bam",
+        dup_metrics = results / "temp" / "marked_duplicates" / "{sample}.dup_metrics.txt",
+        marked_dups_index = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bai"
     threads: 2
     shell:
         '''
@@ -36,10 +36,10 @@ rule BQSR:
         gatk_ref_dict = copied_ref_genome.replace(".fasta", ".dict"),
         known_sites_vcf = copied_known_sites_vcf,
         known_sites_index = f"{copied_known_sites_vcf}.tbi",
-        marked_dups = results / "aligned_reads" / "{sample}.marked_dups.bam",
-        marked_dups_index = results / "aligned_reads" / "{sample}.marked_dups.bai"
+        marked_dups = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bam",
+        marked_dups_index = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bai"
     output:
-        recal_data_table = results / "aligned_reads" / "{sample}.recal_data.table",
+        recal_data_table = results / "temp" / "BQSR" / "{sample}.recal_data.table",
     threads: 2
     shell:
         '''
@@ -52,12 +52,12 @@ rule BQSR:
 
 rule apply_BQSR:
     input:
-        recal_data_table = results / "aligned_reads" / "{sample}.recal_data.table",
-        marked_dups = results / "aligned_reads" / "{sample}.marked_dups.bam",
+        recal_data_table = results / "temp" / "BQSR" / "{sample}.recal_data.table",
+        marked_dups = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bam",
         ref_genome = copied_ref_genome,
     output:
-        analysis_ready_bam = results / "aligned_reads" / "{sample}.analysis_ready.bam",
-        analysys_ready_bam_index = results / "aligned_reads" / "{sample}.analysis_ready.bai"
+        analysis_ready_bam = results / "temp" / "BQSR" / "{sample}.analysis_ready.bam",
+        analysys_ready_bam_index = results / "temp" / "BQSR" / "{sample}.analysis_ready.bai"
     threads: 2
     shell:
         '''
@@ -71,11 +71,12 @@ rule apply_BQSR:
 
 rule haplotype_caller:
     input:
-        analysis_ready_bam = results / "aligned_reads" / "{sample}.analysis_ready.bam",
-        analysys_ready_bam_index = results / "aligned_reads" / "{sample}.analysis_ready.bai",
-        ref_genome = copied_ref_genome
+        analysis_ready_bam = results / "temp" / "BQSR" / "{sample}.analysis_ready.bam",
+        analysys_ready_bam_index = results / "temp" / "BQSR" / "{sample}.analysis_ready.bai",
+        ref_genome = copied_ref_genome,
+        targets_vcf = results / "temp" / "targets.vcf"
     output:
-        called_haplotypes = results / "aligned_reads" / "{sample}.g.vcf.gz"
+        called_haplotypes = results / "temp" / "called_haplotypes" / "{sample}.g.vcf.gz"
     threads: 2
     shell:
         '''
@@ -84,6 +85,6 @@ rule haplotype_caller:
             -R {input.ref_genome} \
             -ERC GVCF \
             -O {output.called_haplotypes} \
-            --alleles {config[targets_vcf]}\
+            --alleles {input.targets_vcf}\
             --output-mode EMIT_ALL_ACTIVE_SITES
         '''
