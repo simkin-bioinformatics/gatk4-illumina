@@ -35,10 +35,11 @@ pixi install
 
 ## Running instructions
 
-Open the gatk4-illumina.yaml file and follow the instructions to provide paths
-for your files.
+Open the 'config' folder and find the 'config.yaml' file. Open this file and
+read the instructions carefully. Provide the paths for your input and output
+files.
 
-Run the pipeline with:
+When you are finished editing the config.yaml file, run the pipeline with:
 ```
 pixi run gatk4
 ```
@@ -60,7 +61,7 @@ into the following steps:
 6. gatk GenotypeGVCFs uses information from multiple samples to make a final
    decision about which mutations are real.
 
-### annotating variants and generating an AA table.
+### annotating variants and generating an AA table
 The second step is annotating the gatk-called variants with snpEff, which can
 roughly be broken down into the following steps:
 1. snpEff indexes your genome and gff files and builds a snpEff database
