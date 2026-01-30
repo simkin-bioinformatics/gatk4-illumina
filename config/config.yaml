@@ -3,7 +3,6 @@
 genome_fasta: resources/PlasmoDB-62_Pfalciparum3D7_Genome.fasta
 genome_gff: resources/PlasmoDB-62_Pfalciparum3D7.gff
 known_sites_vcf: resources/known_sites.vcf.gz
-targets_vcf: config/targets.vcf
 targets_tsv: config/targets.tsv
 
 sample_reads_folder: fastq_inputs
