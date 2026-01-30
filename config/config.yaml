@@ -6,7 +6,7 @@ known_sites_vcf: resources/known_sites.vcf.gz
 targets_vcf: config/targets.vcf
 targets_tsv: config/targets.tsv
 
-sample_reads_folder: resources/cherrypicked_reads
+sample_reads_folder: fastq_inputs
 R1_suffix: _R1.fastq.gz
 R2_suffix: _R2.fastq.gz
 
@@ -20,11 +20,12 @@ database_description: "A database for plasmoDB version 62"
 
 # Output Files
 # # --------------------------------------------------------------------------
-output_directory: results/ccc
+output_directory: test_output/ccc
 
 # Directory of indexed input files
 # ---------------------------------------------------------------------------
-#if you have a globally accessible folder of indexed genome files and don't mind new indexes being added there, you
-# can specify a path to this directory. Otherwise, if you leave this variable as is it will create an indexed_input_files
-# directory inside the current project directory.
+#if you have a globally accessible folder of indexed genome files and don't mind
+#new indexes being added there, you can specify an absolute path to this
+#directory. Otherwise, if you leave this variable as is it will create an
+#indexed_input_files directory inside the current project directory.
 indexed_input_directory: indexed_input_files
