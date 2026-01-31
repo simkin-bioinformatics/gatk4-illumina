@@ -12,7 +12,7 @@ results = Path(config['output_directory'])
 include: "rules/create_indices.smk"
 include: "rules/align_reads.smk"
 
-snp_eff_copied = results / Path(config['snp_eff_folder']).name
+snp_eff_copied = results / "temp" / Path(config['snp_eff_folder']).name
 module snp_eff_annotation:
     snakefile:
         github("simkin-bioinformatics/snp_eff_annotation", path = "/workflow/Snakefile", branch = "main")
