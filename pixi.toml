@@ -6,7 +6,7 @@ platforms = ["linux-64", "osx-arm64"]
 version = "0.1.0"
 
 [tasks]
-gatk4 = "snakemake --unlock && snakemake -c 8 --rerun-incomplete"
+gatk4 = "pixi install -a && snakemake --unlock && snakemake -c 8 --rerun-incomplete"
 
 [dependencies]
 bcftools = ">=1.23,<2"
