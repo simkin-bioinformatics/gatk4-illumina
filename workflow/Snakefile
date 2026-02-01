@@ -1,5 +1,9 @@
+# import config
+# -----------------------------------------------------------------
 configfile: "config/config.yaml"
 
+# define variables
+# ---------------------------------------------------------------
 from pathlib import Path
 
 samples = [
@@ -9,37 +13,30 @@ samples = [
 
 results = Path(config['output_directory'])
 
-include: "rules/create_indices.smk"
-include: "rules/align_reads.smk"
-
-snp_eff_copied = results / "temp" / Path(config['snp_eff_folder']).name
+# include external modules
+# -----------------------------------------------------------------------------------
 module snp_eff_annotation:
     snakefile:
-        github("simkin-bioinformatics/snp_eff_annotation", path = "/workflow/Snakefile", branch = "main")
-        # "/home/charlie/snp_eff_annotation/workflow/Snakefile"
+        github("simkin-bioinformatics/snp_eff_annotation", path = "/workflow/Snakefile", tag = '0.1')
+        # "/Users/charlie/snp_eff_annotation/workflow/Snakefile"
     config: config
 
 use rule * from snp_eff_annotation exclude copy_config as snpeff_*
 
-
-
-# get a list of samples from the samples file
-# samples = []
-# with open(config['samples_file'], 'r') as f:
-#     for line in f:
-#         sample = line.strip()
-#         samples.append(sample)
-
+use rule run_snp_eff from snp_eff_annotation as snpeff_run_snp_eff with:
+    input:
+        snp_eff_config = results / "snpEff_processing" / "snpEff.config",
+        snp_eff_database = results / "snpEff_processing"/ "data" / config['genome_database_name'] / "sequence.bin",
+        merged_vcf = results / 'genotyped_cohort.vcf.gz',
 
 # Rules
 # ----------------------------------------------------------------------------------------
+include: "rules/create_indices.smk"
+include: "rules/align_reads.smk"
 
 rule all:
     input:
-        # genotyped_cohort = results / 'genotyped_cohort.vcf.gz'
-        coverage_AA=results / "AA_tables" / "coverage_AA_table.csv",
-        reference_AA=results / "AA_tables" / "reference_AA_table.csv",
-        alternate_AA=results / "AA_tables" / "alternate_AA_table.csv",
+        rules.snpeff_all.input,
         copied_config = results / "config" / "config.yaml",
         copied_targets_tsv = results / "config" / Path(config['targets_tsv']).name,
     default_target: True
@@ -77,7 +74,7 @@ rule consolidate_gVCFs:
     shell:
         # gvcfs=({input.called_haplotypes})
         '''
-         gatk CombineGVCFs \
+         pixi run gatk CombineGVCFs \
            --R {input.ref_genome} \
            --arguments_file {input.variant_arguments_file} \
            -O {output.called_merged_haplotypes}
@@ -92,7 +89,7 @@ rule joint_genotyping_general:
         genotyped_cohort = results / 'genotyped_cohort.vcf.gz'
     shell:
         '''
-        gatk GenotypeGVCFs \
+        pixi run gatk GenotypeGVCFs \
             -R {input.ref_genome} \
             -V {input.called_merged_haplotypes} \
             -O {output.genotyped_cohort} \
