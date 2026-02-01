@@ -23,7 +23,7 @@ rule mark_duplicates:
     threads: 2
     shell:
         '''
-        gatk MarkDuplicates \
+        pixi run gatk MarkDuplicates \
             -I {input.bam} \
             -O {output.marked_dups} \
             -M {output.dup_metrics} \
@@ -43,7 +43,7 @@ rule BQSR:
     threads: 2
     shell:
         '''
-        gatk BaseRecalibrator \
+        pixi run gatk BaseRecalibrator \
             -I {input.marked_dups} \
             -R {input.ref_genome} \
             --known-sites {input.known_sites_vcf} \
@@ -61,7 +61,7 @@ rule apply_BQSR:
     threads: 2
     shell:
         '''
-        gatk ApplyBQSR \
+        pixi run gatk ApplyBQSR \
             -I {input.marked_dups} \
             -R {input.ref_genome} \
             --bqsr-recal-file {input.recal_data_table} \
@@ -80,7 +80,7 @@ rule haplotype_caller:
     threads: 2
     shell:
         '''
-        gatk HaplotypeCaller \
+        pixi run gatk HaplotypeCaller \
             -I {input.analysis_ready_bam} \
             -R {input.ref_genome} \
             -ERC GVCF \

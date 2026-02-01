@@ -37,7 +37,7 @@ rule index_feature_file:
     output:
         known_sites_index = f"{copied_known_sites_vcf}.tbi"
     shell:
-        "gatk IndexFeatureFile -I {input.known_sites_vcf}"
+        "pixi run gatk IndexFeatureFile -I {input.known_sites_vcf}"
 
 rule gatk_Sequence_Dictionary:
     input:
@@ -45,7 +45,7 @@ rule gatk_Sequence_Dictionary:
     output:
         gatk_ref_dict = copied_ref_genome.replace(".fasta", ".dict"),
     shell:
-        "gatk CreateSequenceDictionary -R {input.ref_genome}"
+        "pixi run gatk CreateSequenceDictionary -R {input.ref_genome}"
 
 rule create_targets_vcf:
     input:
@@ -67,7 +67,7 @@ rule create_targets_vcf:
             f.writelines(contents)
 
         subprocess.run([
-            "gatk", "UpdateVCFSequenceDictionary", 
+            "pixi", "run", "gatk", "UpdateVCFSequenceDictionary", 
             "-V", output.targets_vcf_no_header, 
             "--source-dictionary", input.gatk_ref_dict,
             "-O", output.targets_vcf_with_header
