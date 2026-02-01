@@ -24,4 +24,4 @@ database_description: "A database for plasmoDB version 62"
 # directory. Otherwise, if you leave this variable as is it will create an
 # indexed_input_files directory inside the current project directory.
 # ---------------------------------------------------------------------------
-indexed_input_directory: indexed_input_files
+indexed_input_directory: resources/indexed_input_files
