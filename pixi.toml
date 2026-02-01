@@ -1,7 +1,7 @@
 [workspace]
 authors = ["Charlie Simkin <charlie.simkin@gmail.com>"]
 channels = ["conda-forge", "bioconda"]
-name = "gatk"
+name = "test"
 platforms = ["linux-64", "osx-arm64"]
 version = "0.1.0"
 
@@ -10,18 +10,19 @@ gatk4 = "snakemake --unlock && snakemake -c 8 --rerun-incomplete"
 
 [dependencies]
 bcftools = ">=1.23,<2"
-joblib = ">=1.5.3,<2"
-snakemake = ">=7.32.4,<10"
+snakemake = ">=9.16.2,<10"
 bwa = ">=0.7.19,<0.8"
 samtools = ">=1.23,<2"
-conda = ">=25.11.1,<26"
-gatk4 = ">=4.6.2.0,<5"
 rsync = ">=3.4.1,<4"
-snpeff = ">=5.4.0a,<6"
-pandas = "*"
 
-[feature.snpeff.dependencies]
-snpeff = ">=5.4.0a,<6"
+[feature.gatk4]
+dependencies = {gatk4 = ">=4.6.2.0,<5"}
+tasks = {gatk = "gatk"}
+
+[feature.snpeff]
+dependencies = {snpeff = ">=5.4.0a,<6"}
+tasks = {snpeff = "snpeff"}
 
 [environments]
-snpeff = ['snpeff']
+gatk4 = {features = ["gatk4"], no-default-feature = true}
+snpeff = {features = ["snpeff"], no-default-feature = true}
