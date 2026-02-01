@@ -9,22 +9,19 @@ sample_reads_folder: fastq_inputs
 R1_suffix: _R1.fastq.gz
 R2_suffix: _R2.fastq.gz
 
-# folder containing runnable snpeff jar
-snp_eff_folder: ".pixi/envs/default/share/snpeff-5.4.0a-0"
+# Output Files
+# --------------------------------------------------------------------------
+output_directory: results/cherrypicked
 
-#name and description of a snpEff database to be built
+# name and description of a snpEff database to be built
 # ------------------------------------------------------------------------------------
 genome_database_name: "plasmoDB_3D7_v62"
 database_description: "A database for plasmoDB version 62"
 
-# Output Files
-# # --------------------------------------------------------------------------
-output_directory: test_output/ccc
-
 # Directory of indexed input files
+# if you have a globally accessible folder of indexed genome files and don't mind
+# new indexes being added there, you can specify an absolute path to this
+# directory. Otherwise, if you leave this variable as is it will create an
+# indexed_input_files directory inside the current project directory.
 # ---------------------------------------------------------------------------
-#if you have a globally accessible folder of indexed genome files and don't mind
-#new indexes being added there, you can specify an absolute path to this
-#directory. Otherwise, if you leave this variable as is it will create an
-#indexed_input_files directory inside the current project directory.
 indexed_input_directory: indexed_input_files
