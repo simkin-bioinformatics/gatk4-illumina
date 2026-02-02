@@ -64,7 +64,7 @@ rule joint_genotyping_with_dbi:
     input:
         rules.collect_indices.input,
         ref_genome = copied_ref_genome,
-        database = directory(results / "temp" / "{shard}_dbimport"),
+        database = results / "temp" / "{shard}_dbimport",
         targets_vcf = results / "temp" / "targets.vcf",
     output:
         genotyped_shard = results / "temp" / '{shard}_genotyped.vcf.gz'
@@ -104,4 +104,3 @@ rule gather_vcfs:
             --arguments_file {input.arguments_file} \
             -O {output.genotyped_cohort}
         '''
-
