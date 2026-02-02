@@ -1,8 +1,7 @@
 rule bwa_mem:
     input:
+        rules.collect_indices.input,
         ref_genome = copied_ref_genome,
-        bwa_indices = multiext(copied_ref_genome, ".amb", ".ann", ".bwt", ".pac", ".sa"),
-        sam_index = f"{copied_ref_genome}.fai",
         read_1 = Path(config['sample_reads_folder']) / str("{sample}"+config['R1_suffix']),
         read_2 = Path(config['sample_reads_folder']) / str("{sample}" + config['R2_suffix']),
     output:
@@ -19,7 +18,7 @@ rule mark_duplicates:
     output:
         marked_dups = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bam",
         dup_metrics = results / "temp" / "marked_duplicates" / "{sample}.dup_metrics.txt",
-        marked_dups_index = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bai"
+        marked_dups_index = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bai",
     threads: 2
     shell:
         '''
@@ -29,13 +28,16 @@ rule mark_duplicates:
             -M {output.dup_metrics} \
             --CREATE_INDEX true
        '''
-
+       # rules.bwa_index.output,
+       # rules.samtools_index.output,
+       # rules.index_feature_file.output,
+       # rules.gatk_Sequence_Dictionary.output,
+       # rules.create_targets_vcf.output,
 rule BQSR:
     input:
+        rules.collect_indices.input,
         ref_genome = copied_ref_genome,
-        gatk_ref_dict = copied_ref_genome.replace(".fasta", ".dict"),
         known_sites_vcf = copied_known_sites_vcf,
-        known_sites_index = f"{copied_known_sites_vcf}.tbi",
         marked_dups = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bam",
         marked_dups_index = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bai"
     output:
@@ -52,12 +54,13 @@ rule BQSR:
 
 rule apply_BQSR:
     input:
+        rules.collect_indices.input,
         recal_data_table = results / "temp" / "BQSR" / "{sample}.recal_data.table",
         marked_dups = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bam",
         ref_genome = copied_ref_genome,
     output:
         analysis_ready_bam = results / "temp" / "BQSR" / "{sample}.analysis_ready.bam",
-        analysys_ready_bam_index = results / "temp" / "BQSR" / "{sample}.analysis_ready.bai"
+        analysys_ready_bam_index = results / "temp" / "BQSR" / "{sample}.analysis_ready.bai",
     threads: 2
     shell:
         '''
@@ -71,12 +74,14 @@ rule apply_BQSR:
 
 rule haplotype_caller:
     input:
+        rules.collect_indices.input,
         analysis_ready_bam = results / "temp" / "BQSR" / "{sample}.analysis_ready.bam",
         analysys_ready_bam_index = results / "temp" / "BQSR" / "{sample}.analysis_ready.bai",
         ref_genome = copied_ref_genome,
         targets_vcf = results / "temp" / "targets.vcf"
     output:
-        called_haplotypes = results / "temp" / "called_haplotypes" / "{sample}.g.vcf.gz"
+        called_haplotypes = results / "temp" / "called_haplotypes" / "{sample}.g.vcf.gz",
+        called_haplotypes_index = results / "temp" / "called_haplotypes" / "{sample}.g.vcf.gz.tbi",
     threads: 2
     shell:
         '''
