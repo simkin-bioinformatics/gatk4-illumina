@@ -4,6 +4,18 @@ copied_known_sites_vcf = Path(config['indexed_input_directory']) / Path(config['
 import pandas as pd
 import subprocess
 
+rule collect_indices:
+    input:
+        ref_genome = copied_ref_genome,
+        known_sites_vcf = copied_known_sites_vcf,
+        bwa_indices = multiext(copied_ref_genome, ".amb", ".ann", ".bwt", ".pac", ".sa"),
+        sam_index = f"{copied_ref_genome}.fai",
+        known_sites_index = f"{copied_known_sites_vcf}.tbi",
+        gatk_ref_dict = copied_ref_genome.replace(".fasta", ".dict"),
+        targets_vcf_no_header = results / "temp" / "targets_no_header.vcf",
+        targets_vcf_with_header = results / "temp" / "targets.vcf",
+        targets_vcf_with_header_index = results / "temp" / "targets.vcf.idx",
+
 rule copy_genome_and_vcf:
     input:
         ref_genome = Path(config['genome_fasta']).resolve(),
@@ -53,7 +65,8 @@ rule create_targets_vcf:
         targets_tsv = config['targets_tsv']
     output:
         targets_vcf_no_header = results / "temp" / "targets_no_header.vcf",
-        targets_vcf_with_header = results / "temp" / "targets.vcf"
+        targets_vcf_with_header = results / "temp" / "targets.vcf",
+        targets_vcf_with_header_index = results / "temp" / "targets.vcf.idx",
     run:
         df = pd.read_table(input.targets_tsv)[['CHROM', 'POS', 'ID', 'REF', 'ALT']]
         df[['QUAL', 'FILTER', 'INFO']] = ['.', 'PASS', '.']
@@ -67,8 +80,8 @@ rule create_targets_vcf:
             f.writelines(contents)
 
         subprocess.run([
-            "pixi", "run", "gatk", "UpdateVCFSequenceDictionary", 
-            "-V", output.targets_vcf_no_header, 
+            "pixi", "run", "gatk", "UpdateVCFSequenceDictionary",
+            "-V", output.targets_vcf_no_header,
             "--source-dictionary", input.gatk_ref_dict,
             "-O", output.targets_vcf_with_header
         ])
