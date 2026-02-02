@@ -4,14 +4,13 @@ genome_fasta: resources/PlasmoDB-62_Pfalciparum3D7_Genome.fasta
 genome_gff: resources/PlasmoDB-62_Pfalciparum3D7.gff
 known_sites_vcf: resources/known_sites.vcf.gz
 targets_tsv: config/targets.tsv
-
 sample_reads_folder: fastq_inputs
 R1_suffix: _R1.fastq.gz
 R2_suffix: _R2.fastq.gz
 
 # Output Files
 # --------------------------------------------------------------------------
-output_directory: results/cherrypicked
+output_directory: results
 
 # name and description of a snpEff database to be built
 # ------------------------------------------------------------------------------------
