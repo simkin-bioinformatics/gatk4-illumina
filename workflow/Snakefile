@@ -34,11 +34,7 @@ use rule run_snp_eff from snp_eff_annotation as snpeff_run_snp_eff with:
 # ----------------------------------------------------------------------------------------
 include: "rules/create_indices.smk"
 include: "rules/call_haplotypes.smk"
-use_db = config.get("use_db", False)
-if use_db:
-    include:"rules/joint_genotyping_db.smk"
-else:
-    include: "rules/joint_genotyping.smk"
+include:"rules/joint_genotyping.smk"
 
 onsuccess:
     subprocess.run(["rm", "-rf", results / "temp"])
