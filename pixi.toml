@@ -21,7 +21,8 @@ tasks = {gatk = "gatk"}
 
 [feature.snpeff]
 dependencies = {snpeff = ">=5.4.0a,<6"}
-tasks = {snpeff = "snpeff"}
+tasks = {snpeff = "snpEff"}
+target.osx-arm64.tasks.snpeff = {cmd = "snpeff"}
 
 [environments]
 gatk4 = {features = ["gatk4"], no-default-feature = true}
