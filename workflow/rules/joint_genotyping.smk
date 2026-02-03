@@ -68,6 +68,7 @@ rule joint_genotyping_with_dbi:
         ref_genome = copied_ref_genome,
         database = results / "temp" / "{shard}_dbimport",
         targets_vcf = results / "temp" / "targets.vcf",
+        interval_list = results / "temp" / "interval_lists" / "{shard}.interval_list",
     output:
         genotyped_shard = results / "temp" / '{shard}_genotyped.vcf.gz'
     shell:
@@ -76,6 +77,7 @@ rule joint_genotyping_with_dbi:
             -R {input.ref_genome} \
             -V gendb://{input.database} \
             -O {output.genotyped_shard} \
+            -L {input.interval_list} \
             --force-output-intervals {input.targets_vcf}
         '''
 
