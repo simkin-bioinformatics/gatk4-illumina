@@ -32,12 +32,14 @@ checkpoint split_intervals:
         interval_list = results / "temp" / "intervals.interval_list",
     output:
         interval_folder = directory(results / "temp" / "interval_lists")
+    params:
+        scatter_count = config.get('scatter_count', '8')
     shell:
         '''
         pixi run gatk SplitIntervals \
            -R {input.ref_genome} \
            -L {input.interval_list} \
-           --scatter-count 10 \
+           --scatter-count {params.scatter_count} \
            -O {output.interval_folder}
         '''
 
