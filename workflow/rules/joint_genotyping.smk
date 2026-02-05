@@ -5,7 +5,6 @@ called_haplotypes_folder = "called_haplotypes_targeted"
 rule create_intervals_for_processing:
     input:
         rules.collect_indices.input,
-        sample_map_file = results / "temp" / "cohort.sample_map",
         ref_genome = copied_ref_genome,
     output:
         interval_list = results / "temp" / "intervals.interval_list",
@@ -50,7 +49,6 @@ rule create_sample_map_file:
 rule genomics_db_import:
     input:
         interval_list = results / "temp" / "interval_lists" / "{shard}.interval_list",
-        ref_genome = copied_ref_genome,
         sample_map_file = results / "temp" / "cohort.sample_map",
     output:
         database = directory(results / "temp" / "{shard}_dbimport")

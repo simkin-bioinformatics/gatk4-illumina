@@ -18,7 +18,7 @@ rule mark_duplicates:
     output:
         marked_dups = results / "temp" / "marked_duplicates" / "{sample}.bam",
         dup_metrics = results / "temp" / "marked_duplicates" / "{sample}.dup_metrics.txt",
-        marked_dups_index = results / "temp" / "marked_duplicates" / "{sample}.marked_dups.bai",
+        marked_dups_index = results / "temp" / "marked_duplicates" / "{sample}.bai",
     threads: 2
     shell:
         '''
@@ -87,7 +87,9 @@ rule haplotype_caller_targeted:
             -R {input.ref_genome} \
             -ERC BP_RESOLUTION \
             -O {output.called_haplotypes} \
-            --alleles {input.targets_vcf}\
+            --alleles {input.targets_vcf} \
+            -L {input.targets_vcf} \
+            --interval-padding {params.interval_padding} \
             --output-mode EMIT_ALL_ACTIVE_SITES
         '''
 
