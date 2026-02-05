@@ -8,6 +8,22 @@ sample_reads_folder: fastq_inputs
 R1_suffix: _R1.fastq.gz
 R2_suffix: _R2.fastq.gz
 
+# Amplicon Sequencing
+# If you used any form of amplicon sequencing (MIP, PCR, ..) then set the
+# following to true
+# ------------------------------------------------------------------------
+amplicon_sequencing: yes
+
+# target mode to change based on whether you want to run haplotype caller with 
+# mutations from targeted only, novel discovery only, or consolidated with novel discovery 
+# and targeted together
+target_mode: consolidated # novel, targeted, or consolidated
+
+# number of base pairs surrounding your target to include
+# most useful if you want to run in targeted mode but also include a window around your targets
+# for novel discovery
+interval_padding: 0 # integer representing base pairs surrounding target sites to include
+
 # Output Files
 # --------------------------------------------------------------------------
 output_directory: results
