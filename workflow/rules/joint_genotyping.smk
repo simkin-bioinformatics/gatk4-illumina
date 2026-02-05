@@ -1,13 +1,6 @@
-rule create_sample_map_file:
-    input:
-        called_haplotypes = expand(results / "temp" / "called_haplotypes" / "{sample}.g.vcf.gz", sample = samples),
-    output:
-        sample_map_file = results / "temp" / "cohort.sample_map",
-    run:
-        with open(output.sample_map_file, 'w') as out:
-            for path in input.called_haplotypes:
-                sample_name = Path(path).name.removesuffix('.g.vcf.gz')
-                out.write(sample_name + '\t' + str(path) + "\n")
+called_haplotypes_folder = "called_haplotypes_targeted"
+# called_haplotypes_folder = "called_haplotypes_novel"
+# called_haplotypes_folder = "called_haplotypes_consolidated"
 
 rule create_intervals_for_processing:
     input:
@@ -43,12 +36,19 @@ checkpoint split_intervals:
            -O {output.interval_folder}
         '''
 
+rule create_sample_map_file:
+    input:
+        called_haplotypes_consolidated = expand(results / "temp" / f"called_haplotypes_{config['target_mode']}" / "{sample}.g.vcf.gz", sample = samples)
+    output:
+        sample_map_file = results / "temp" / "cohort.sample_map",
+    run:
+        with open(output.sample_map_file, 'w') as out:
+            for path in input.called_haplotypes_consolidated:
+                sample_name = Path(path).name.removesuffix('.g.vcf.gz')
+                out.write(sample_name + '\t' + str(path) + "\n")
+
 rule genomics_db_import:
     input:
-        rules.collect_indices.input,
-        called_haplotypes = expand(results / "temp" / "called_haplotypes" / "{sample}.g.vcf.gz", sample = samples),
-        called_haplotypes_index = expand(results / "temp" / "called_haplotypes" / "{sample}.g.vcf.gz.tbi", sample = samples),
-        interval_folder = results / "temp" / "interval_lists",
         interval_list = results / "temp" / "interval_lists" / "{shard}.interval_list",
         ref_genome = copied_ref_genome,
         sample_map_file = results / "temp" / "cohort.sample_map",
@@ -84,8 +84,8 @@ rule joint_genotyping_with_dbi:
 def do_the_genotyping(wildcards):
     checkpoint_output = checkpoints.split_intervals.get(**wildcards).output['interval_folder']
     shards = [file.name.removesuffix('.interval_list') for file in Path(checkpoint_output).glob("*.interval_list")]
-    # print(shards)
-    return sorted(expand(results / "temp" / "{shard}_genotyped.vcf.gz", shard = shards))
+    genotyped_shards = sorted(expand(results / "temp" / "{shard}_genotyped.vcf.gz", shard = shards))
+    return genotyped_shards
 
 rule gather_vcfs_arguments:
     input:

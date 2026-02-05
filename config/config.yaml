@@ -12,10 +12,10 @@ R2_suffix: _R2.fastq.gz
 # If you used any form of amplicon sequencing (MIP, PCR, ..) then set the
 # following to true
 # ------------------------------------------------------------------------
-amplicon_sequencing: yes
+amplicon_sequencing: true
 
-# target mode to change based on whether you want to run haplotype caller with 
-# mutations from targeted only, novel discovery only, or consolidated with novel discovery 
+# target mode to change based on whether you want to run haplotype caller with
+# mutations from targeted only, novel discovery only, or consolidated with novel discovery
 # and targeted together
 target_mode: consolidated # novel, targeted, or consolidated
 

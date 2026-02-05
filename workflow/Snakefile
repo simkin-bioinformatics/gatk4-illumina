@@ -14,12 +14,17 @@ samples = [
 
 results = Path(config['output_directory'])
 
+if config['amplicon_sequencing']:
+    bqsr_input_path =  results / "temp" / "aligned_reads"
+elif not config['amplicon_sequencing']:
+    bqsr_input_path =  results / "temp" / "marked_duplicates"
+
 # include external modules
 # -----------------------------------------------------------------------------------
 module snp_eff_annotation:
     snakefile:
-        github("simkin-bioinformatics/snp_eff_annotation", path = "/workflow/Snakefile", tag = '0.1')
-        # "/Users/charlie/snp_eff_annotation/workflow/Snakefile"
+        github("simkin-bioinformatics/snp_eff_annotation", path = "/workflow/Snakefile", commit = "e4f7af9e4dee3375af750cb69f61f1c862a495f5")
+        # "/home/charlie/snp_eff_annotation/workflow/Snakefile"
     config: config
 
 use rule * from snp_eff_annotation exclude copy_config as snpeff_*
