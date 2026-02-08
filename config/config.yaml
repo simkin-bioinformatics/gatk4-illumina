@@ -1,12 +1,12 @@
 # Input Files
 # ----------------------------------------------------------------------------------
-genome_fasta: resources/PlasmoDB-62_Pfalciparum3D7_Genome.fasta
-genome_gff: resources/PlasmoDB-62_Pfalciparum3D7.gff
-known_sites_vcf: resources/known_sites.vcf.gz
+genome_fasta: /home/alfred/gatk4-illumina/resources/PlasmoDB-62_Pfalciparum3D7_Genome.fasta
+genome_gff: /home/alfred/gatk4-illumina/resources/PlasmoDB-62_Pfalciparum3D7.gff
+known_sites_vcf: /home/alfred/gatk4-illumina/resources/known_sites.vcf.gz
 targets_tsv: config/targets.tsv
-sample_reads_folder: fastq_inputs
-R1_suffix: _R1.fastq.gz
-R2_suffix: _R2.fastq.gz
+sample_reads_folder: /home/alfred/gatk4-illumina/miptools_cross_sectional/fastq_inputs
+R1_suffix: _R1_001.fastq.gz
+R2_suffix: _R2_001.fastq.gz
 
 # Amplicon Sequencing
 # If you used any form of amplicon sequencing (MIP, PCR, ..) then set the
@@ -26,7 +26,7 @@ interval_padding: 0 # integer representing base pairs surrounding target sites t
 
 # Output Files
 # --------------------------------------------------------------------------
-output_directory: results
+output_directory: miptools_cross-sectional_results
 
 # name and description of a snpEff database to be built
 # ------------------------------------------------------------------------------------

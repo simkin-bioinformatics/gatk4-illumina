@@ -23,7 +23,7 @@ elif not config['amplicon_sequencing']:
 # -----------------------------------------------------------------------------------
 module snp_eff_annotation:
     snakefile:
-        github("simkin-bioinformatics/snp_eff_annotation", path = "/workflow/Snakefile", commit = "e4f7af9e4dee3375af750cb69f61f1c862a495f5")
+        github("simkin-bioinformatics/snp_eff_annotation", path = "/workflow/Snakefile", commit = "329cedaf5a2ca47b0e62ac331e3d1813b57b8d21")
         # "/home/charlie/snp_eff_annotation/workflow/Snakefile"
     config: config
 
